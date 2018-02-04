@@ -5,6 +5,7 @@
 //
 //=============================================================================
 #include "minimap.h"
+#include "input.h"
 #include "player.h"
 #include "camera.h"
 #include "dungeon.h"
@@ -27,7 +28,8 @@ void SetDiffuseMiniMap(void);
 //*****************************************************************************
 VERTEX_2D		g_vertexWkMiniMap[MAP_WIDTH * MAP_HEIGHT][NUM_VERTEX];	// 頂点情報格納ワーク
 D3DXVECTOR3		g_posMiniMap;											// ミニマップの位置
-D3DXVECTOR3		g_scaleMiniMap;											// パネルの大きさ
+float			g_scaleMiniMap;											// パネルサイズ
+float			g_scaleMiniMapTo;										// パネルサイズの遷移
 bool			g_bMiniMap[MAP_WIDTH][MAP_HEIGHT];						// ミニマップ描画判定
 
 //=============================================================================
@@ -38,11 +40,15 @@ HRESULT InitMiniMap(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	g_posMiniMap = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	g_scaleMiniMap = D3DXVECTOR3(TEXTURE_MINIMAP_SIZE_X, TEXTURE_MINIMAP_SIZE_Y, 0.0f);
+	g_scaleMiniMap = MINIMAP_SIZE_SMALL;
+	g_scaleMiniMapTo = MINIMAP_SIZE_SMALL;
 
 	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-
+		for (int j = 0; j < MAP_HEIGHT; j++)
+		{
+			g_bMiniMap[i][j] = false;
+		}
 	}
 
 	// 頂点情報の作成
@@ -64,9 +70,30 @@ void UninitMiniMap(void)
 //=============================================================================
 void UpdateMiniMap(void)
 {
-	// スクロール処理
-	//g_posMiniMap = -GetPlayer(0)->pos + *GetCameraPos();
-	g_posMiniMap = D3DXVECTOR3(30, SCREEN_HEIGHT - g_scaleMiniMap.y * MAP_HEIGHT - 30, 0.0f);
+	if (GetKeyboardTrigger(DIK_M) || IsButtonTriggered(0, BUTTON_L))
+	{
+		if (g_scaleMiniMap == MINIMAP_SIZE_SMALL)
+		{
+			g_scaleMiniMapTo = MINIMAP_SIZE_LARGE;
+		}
+		else if (g_scaleMiniMap == MINIMAP_SIZE_LARGE)
+		{
+			g_scaleMiniMapTo = MINIMAP_SIZE_SMALL;
+		}
+	}
+	if (g_scaleMiniMap != g_scaleMiniMapTo)
+	{
+		if (fabs(g_scaleMiniMap - g_scaleMiniMapTo) < 0.1)
+		{
+			g_scaleMiniMap = g_scaleMiniMapTo;
+		}
+		else
+		{
+			g_scaleMiniMap = (g_scaleMiniMap * 3 + g_scaleMiniMapTo) * 0.25;
+		}
+	}
+
+	g_posMiniMap = D3DXVECTOR3(30, SCREEN_HEIGHT - g_scaleMiniMap * MAP_HEIGHT - 30, 0.0f);
 	SetVertexMiniMap();
 	SetDiffuseMiniMap();
 }
@@ -93,12 +120,15 @@ void DrawMiniMap(void)
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 
 	// マップチップ
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
-			// ポリゴンの描画
-			pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkMiniMap[MAP_WIDTH * i + j], sizeof(VERTEX_2D));
+			if (g_bMiniMap[i][j])
+			{
+				// ポリゴンの描画
+				pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkMiniMap[MAP_HEIGHT * i + j], sizeof(VERTEX_2D));
+			}
 		}
 	}
 
@@ -118,21 +148,21 @@ void DrawMiniMap(void)
 HRESULT MakeVertexMiniMap(void)
 {
 	// マップ全体を処理する
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			// rhwの設定
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].rhw =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].rhw =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].rhw =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].rhw = 1.0f;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].rhw =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].rhw =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].rhw =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].rhw = 1.0f;
 
 			// 反射光の設定
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
 		}
 	}
 
@@ -145,30 +175,30 @@ HRESULT MakeVertexMiniMap(void)
 //=============================================================================
 void SetVertexMiniMap(void)
 {
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			// 頂点座標の設定
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].vtx.x = g_scaleMiniMap.x * j;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].vtx.y = g_scaleMiniMap.y * i;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.x = g_scaleMiniMap * i;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.y = g_scaleMiniMap * j;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.z = 0.0f;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx += g_posMiniMap;
 
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].vtx.x = g_scaleMiniMap.x * (j + 1);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].vtx.y = g_scaleMiniMap.y * i;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.x = g_scaleMiniMap * (i + 1);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.y = g_scaleMiniMap * j;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.z = 0.0f;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx += g_posMiniMap;
 
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].vtx.x = g_scaleMiniMap.x * j;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].vtx.y = g_scaleMiniMap.y * (i + 1);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.x = g_scaleMiniMap * i;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.y = g_scaleMiniMap * (j + 1);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.z = 0.0f;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx += g_posMiniMap;
 
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].vtx.x = g_scaleMiniMap.x * (j + 1);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].vtx.y = g_scaleMiniMap.y * (i + 1);
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.x = g_scaleMiniMap * (i + 1);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.y = g_scaleMiniMap * (j + 1);
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.z = 0.0f;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx += g_posMiniMap;
 		}
 	}
 }
@@ -178,10 +208,12 @@ void SetVertexMiniMap(void)
 //=============================================================================
 void SetDiffuseMiniMap(void)
 {
+	PLAYER *player = GetPlayer();
 	D3DXCOLOR col = D3DCOLOR_RGBA(255, 255, 255, 255);
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	int i, j;
+	for (i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (j = 0; j < MAP_HEIGHT; j++)
 		{
 			// 反射光の設定
 			switch (GetMap(i,j))
@@ -206,7 +238,7 @@ void SetDiffuseMiniMap(void)
 					{
 						if (GetRoomID(i, j) == GetExitRoomID())
 						{
-							col = D3DCOLOR_RGBA(255, 255, 0, 128);
+							col = D3DCOLOR_RGBA(128, 255, 0, 128);
 						}
 						else
 						{
@@ -221,7 +253,7 @@ void SetDiffuseMiniMap(void)
 				else
 
 				{
-					col = D3DCOLOR_RGBA(0, 128, 255, 128);
+					col = D3DCOLOR_RGBA(0, 0, 0, 0);
 
 				}
 				break;
@@ -230,16 +262,47 @@ void SetDiffuseMiniMap(void)
 				col = D3DCOLOR_RGBA(128, 0, 255, 128);
 				break;
 			case MAP_EXIT:
-				col = D3DCOLOR_RGBA(255, 128, 0, 128);
+				col = D3DCOLOR_RGBA(255, 255, 255, 128);
 				break;
 			default:
 				break;
 			}
 
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][0].diffuse =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][1].diffuse =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][2].diffuse =
-			g_vertexWkMiniMap[MAP_WIDTH * i + j][3].diffuse = col;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].diffuse =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].diffuse =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].diffuse =
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].diffuse = col;
+		}
+	}
+
+	i = (int)(player->pos.x / TEXTURE_DUNGEON_SIZE_X);
+	j = (int)(player->pos.y / TEXTURE_DUNGEON_SIZE_Y);
+	col = D3DCOLOR_RGBA(255, 255, 0, 128);
+
+	g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].diffuse =
+	g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].diffuse =
+	g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].diffuse =
+	g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].diffuse = col;
+}
+
+//=============================================================================
+// ミニマップの可視化
+//=============================================================================
+void SetMiniMap(int startX, int startY, int endX, int endY)
+{
+	if (startX < 0) startX = 0;
+	if (startY < 0) startY = 0;
+	if (endX > MAP_WIDTH) endX = MAP_WIDTH;
+	if (endY > MAP_HEIGHT) endY = MAP_HEIGHT;
+
+	for (int x = startX; x < endX; x++)
+	{
+		for (int y = startY; y < endY; y++)
+		{
+			if (!g_bMiniMap[x][y])
+			{
+				g_bMiniMap[x][y] = true;
+			}
 		}
 	}
 }

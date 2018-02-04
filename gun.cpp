@@ -136,45 +136,45 @@ void UpdateGun(void)
 					gun->isLocked = true;
 					if (gun->type == GUN_SHOTGUN)
 					{
-						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.125f;
 						if (player->vec.y > 0)
 						{
-							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
-							gun->subRot = D3DX_PI / 4.0f;
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X * 0.125f;
+							gun->subRot = D3DX_PI * 0.25f;
 						}
 						else if (player->vec.y < 0)
 						{
-							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
-							gun->subRot = -D3DX_PI / 4.0f;
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.125f;
+							gun->subRot = -D3DX_PI * 0.25f;
 						}
 					}
 					else
 					{
-						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.25f;
 						if (player->vec.y > 0)
 						{
-							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
-							gun->subRot = D3DX_PI / 4.0f;
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X * 0.25f;
+							gun->subRot = D3DX_PI * 0.25f;
 						}
 						else if (player->vec.y < 0)
 						{
-							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-							gun->subRot = -D3DX_PI / 4.0f;
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.25f;
+							gun->subRot = -D3DX_PI * 0.25f;
 						}
 					}
 				}
 				else
 				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
+					gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.125;
 					if (player->vec.y > 0)
 					{
-						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subRot = D3DX_PI / 4;
+						gun->subPos.x += TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subRot = D3DX_PI * 0.25f;
 					}
 					else if (player->vec.y < 0)
 					{
-						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subRot = -D3DX_PI / 4;
+						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subRot = -D3DX_PI * 0.25f;
 					}
 				}
 				// ‚È‚ß‚ç‚©‚É‰ñ“]‚³‚¹‚é
@@ -190,19 +190,19 @@ void UpdateGun(void)
 					gun->isLocked = true;
 					if (gun->type == GUN_SHOTGUN)
 					{
-						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 2.0f;
-						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 8.0f;
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.375f;
+						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y * 0.125f;
 					}
 					else
 					{
-						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 8.0f * 3;
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y * 0.375f;
 					}
 				}
 				else
 				{
-					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 4.0f;
-					gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 4.0f;
+					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.25f;
+					gun->subPos.y = TEXTURE_PLAYER_SIZE_Y * 0.25f;
 				}
 				break;
 			case DIR_LEFT:	// ¶
@@ -211,48 +211,48 @@ void UpdateGun(void)
 					gun->isLocked = true;
 					if (gun->type == GUN_SHOTGUN)
 					{
-						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.125f;
 						if (player->vec.y > 0)
 						{
-							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
-							gun->subRot = -D3DX_PI / 4;
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.25f;
+							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y * 0.25f;
+							gun->subRot = -D3DX_PI * 0.25f;
 						}
 						else if (player->vec.y < 0)
 						{
-							gun->subPos.y += TEXTURE_PLAYER_SIZE_Y / 8.0f;
-							gun->subRot = D3DX_PI / 4;
+							gun->subPos.y += TEXTURE_PLAYER_SIZE_Y * 0.125f;
+							gun->subRot = D3DX_PI * 0.25f;
 						}
 					}
 					else
 					{
-						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f * 3;
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.375f;
 						if (player->vec.y > 0)
 						{
-							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-							gun->subRot = -D3DX_PI / 4;
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.25f;
+							gun->subRot = -D3DX_PI * 0.25f;
 						}
 						else if (player->vec.y < 0)
 						{
-							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
-							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
-							gun->subRot = D3DX_PI / 4;
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X * 0.25f;
+							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y * 0.25f;
+							gun->subRot = D3DX_PI * 0.25f;
 						}
 					}
 				}
 				else
 				{
-					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
+					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.125f;
 					if (player->vec.y > 0)
 					{
-						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subRot = -D3DX_PI / 4;
+						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subRot = -D3DX_PI * 0.25f;
 					}
 					else if (player->vec.y < 0)
 					{
-						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 8.0f;
-						gun->subRot = D3DX_PI / 4;
+						gun->subPos.x += TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y * 0.125f;
+						gun->subRot = D3DX_PI * 0.25f;
 					}
 				}
 				break;
@@ -263,18 +263,18 @@ void UpdateGun(void)
 					gun->isLocked = true;
 					if (gun->type == GUN_SHOTGUN)
 					{
-						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 2.0f;
-						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 4.0f;
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.375f;
+						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y * 0.25f;
 					}
 					else
 					{
-						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 4.0f;
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X * 0.125f;
+						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y * 0.25f;
 					}
 				}
 				else
 				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
+					gun->subPos.x = TEXTURE_PLAYER_SIZE_X * 0.25f;
 					gun->subPos.y = 0.0f;
 				}
 				// ‚È‚ß‚ç‚©‚É‰ñ“]‚³‚¹‚é
@@ -593,7 +593,7 @@ void SetShot()
 	case GUN_PISTOL:
 		pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 0.9;
 		pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 0.9;
-		SetBullet(pos + GetGun()->pos, GetGun()->rot.z, PLAYER_BULLET_PISTOL, GUN_BULLET_DURATION_001);
+		SetBullet(pos + GetGun()->pos, GetGun()->rot.z, PLAYER_BULLET_PISTOL);
 		break;
 	case GUN_SHOTGUN:
 		pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 1.5;
@@ -601,7 +601,7 @@ void SetShot()
 		for (int i = 0; i < SLUG_MAX; i++)
 		{
 			float subRot = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
-			SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_PISTOL, GUN_BULLET_DURATION_002);
+			SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
 		}
 		break;
 	}

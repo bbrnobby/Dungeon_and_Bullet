@@ -6,6 +6,8 @@
 //=============================================================================
 #include "camera.h"
 #include "player.h"
+#include "minimap.h"
+#include "dungeon.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -91,6 +93,9 @@ void UpdateCamera(void)
 			break;
 		}
 		g_posCameraRounded = D3DXVECTOR3((int)(g_posCamera.x - player->pos.x), (int)(g_posCamera.y - player->pos.y), (int)(g_posCamera.z - player->pos.z));
+		
+		// 視界の範囲でミニマップ可視化
+		SetMiniMap((int)((-g_posCameraRounded.x) / TEXTURE_DUNGEON_SIZE_X), (int)((-g_posCameraRounded.y) / TEXTURE_DUNGEON_SIZE_Y), (int)((-g_posCameraRounded.x + SCREEN_WIDTH) / TEXTURE_DUNGEON_SIZE_X), (int)((-g_posCameraRounded.y + SCREEN_HEIGHT) / TEXTURE_DUNGEON_SIZE_Y));
 	}
 	else
 	{	// プレイヤーがやられたとき

@@ -144,7 +144,7 @@ void UpdatePlayer(void)
 				}
 				if (player->state != PLAYER_LOCK)
 				{
-					player->dir = DIR_UP;
+						player->dir = DIR_UP;
 				}
 				player->vec.y = -PLAYER_SPEED;
 			}
@@ -202,7 +202,7 @@ void UpdatePlayer(void)
 			}
 
 			// ‘–‚é
-			if (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B)) {
+			if (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B) || GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL) {
 				if (player->state == PLAYER_WALK)
 				{	// •à‚«ó‘Ô‚ÌŽžA‘–‚èƒ‚[ƒVƒ‡ƒ“‚É•Ï‰»
 					player->state = PLAYER_RUN;
@@ -276,7 +276,14 @@ void UpdatePlayer(void)
 				player->vec = player->vec / 4 * 3;
 				break;
 			case PLAYER_RUN:
-				player->vec = player->vec / 2 * 3;
+				if (GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
+				{
+					player->vec = player->vec * 2;
+				}
+				else
+				{
+					player->vec = player->vec / 2 * 3;
+				}
 				break;
 			}
 
@@ -342,7 +349,7 @@ void UpdatePlayer(void)
 			player->rot.z = player->rot.z * 20 / 21;
 			break;
 		case PLAYER_RUN:
-			player->rot.z = ((1.5f - player->PatternAnim) * 0.5f + player->rot.z * 20) / 21;
+			player->rot.z = ((1.5f - player->PatternAnim) * 0.5f + ((1 - player->dir) % 2) * 0.3f + player->rot.z * 20) / 21;
 			break;
 		}
 

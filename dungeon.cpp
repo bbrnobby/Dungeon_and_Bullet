@@ -10,6 +10,7 @@
 #include "font.h"
 #include "treasure.h"
 #include "camera.h"
+#include "minimap.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -30,6 +31,7 @@ HRESULT MakeVertexDungeon(void);
 void SetTextureDungeon(void);
 void SetTextureExit(void);
 void SetVertexDungeon(void);
+void SetDungeon(void);
 void SplitX(SPACE *t_room, SPACE *splited_room1, SPACE *splited_room2);
 void SplitY(SPACE *t_room, SPACE *splited_room1, SPACE *splited_room2);
 void Split(SPACE *t_room);
@@ -43,7 +45,7 @@ void SetExit(int no);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-int						g_map[MAP_HEIGHT][MAP_WIDTH];							// マップ配列
+int						g_map[MAP_WIDTH][MAP_HEIGHT];							// マップ配列
 SPACE					g_space[MAX_ROOM_COUNT];								// 部屋決めの範囲
 ROOM					boundary[MAX_ROOM_COUNT - 1];							// 箱割り方のための境界
 int						g_Rcount;
@@ -74,11 +76,14 @@ HRESULT InitDungeon(int type)
 			&g_pD3DTextureDungeon);				// 読み込むメモリのポインタ
 	}
 
+	// ダンジョンの生成
+	SetDungeon();
+
 	// 頂点情報の作成
 	MakeVertexDungeon();
 
-	// ダンジョンの生成
-	SetDungeon();
+	// テクスチャの設定
+	SetTextureDungeon();
 
 	return S_OK;
 }
@@ -119,12 +124,12 @@ void DrawDungeon(void)
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
 	// マップチップ
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			// ポリゴンの描画
-			pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkDungeon[MAP_WIDTH * i + j], sizeof(VERTEX_2D));
+			pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkDungeon[MAP_HEIGHT * i + j], sizeof(VERTEX_2D));
 		}
 	}
 }
@@ -135,21 +140,31 @@ void DrawDungeon(void)
 HRESULT MakeVertexDungeon(void)
 {	
 	// マップ全体を処理する
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			// rhwの設定
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].rhw =
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].rhw =
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].rhw =
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].rhw = 1.0f;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].rhw =
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].rhw =
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].rhw =
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].rhw = 1.0f;
 
 			// 反射光の設定
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			if (g_map[i][j] == MAP_PATH || g_map[i][j] == MAP_TRAIL)
+			{
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+			}
+			else
+			{
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+				g_vertexWkDungeon[MAP_HEIGHT * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			}
 		}
 	}
 
@@ -162,9 +177,9 @@ HRESULT MakeVertexDungeon(void)
 void SetTextureDungeon(void)
 {
 	int tx, ty;
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			switch (g_map[i][j])
 			{
@@ -229,10 +244,10 @@ void SetTextureDungeon(void)
 				ty = 1;
 				break;
 			}
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
 
 		}
 	}
@@ -244,10 +259,10 @@ void SetTextureDungeon(void)
 void SetTextureExit(void)
 {
 	const int tx = 4, ty = 1;
-	g_vertexWkDungeon[MAP_WIDTH * exitY + exitX][0].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
-	g_vertexWkDungeon[MAP_WIDTH * exitY + exitX][1].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
-	g_vertexWkDungeon[MAP_WIDTH * exitY + exitX][2].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
-	g_vertexWkDungeon[MAP_WIDTH * exitY + exitX][3].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
+	g_vertexWkDungeon[MAP_HEIGHT * exitX + exitY][0].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
+	g_vertexWkDungeon[MAP_HEIGHT * exitX + exitY][1].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * ty);
+	g_vertexWkDungeon[MAP_HEIGHT * exitX + exitY][2].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * tx, 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
+	g_vertexWkDungeon[MAP_HEIGHT * exitX + exitY][3].tex = D3DXVECTOR2(1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_X * (tx + 1), 1.0f / TEXTURE_PATTERN_DUNGEON_DIVIDE_Y * (ty + 1));
 }
 
 //=============================================================================
@@ -258,30 +273,30 @@ void SetVertexDungeon(void)
 	PLAYER *player = GetPlayer();
 	D3DXVECTOR3 *posCamera = GetCameraPos();
 
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			// 頂点座標の設定
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].vtx.x = TEXTURE_DUNGEON_SIZE_X * j;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].vtx.y = TEXTURE_DUNGEON_SIZE_Y * i + TEXTURE_PLAYER_SIZE_Y;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].vtx.z = 0.0f;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][0].vtx += *posCamera;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].vtx.x = TEXTURE_DUNGEON_SIZE_X * i;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].vtx.y = TEXTURE_DUNGEON_SIZE_Y * j + TEXTURE_PLAYER_SIZE_Y;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].vtx.z = 0.0f;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][0].vtx += *posCamera;
 
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].vtx.x = TEXTURE_DUNGEON_SIZE_X * (j + 1);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].vtx.y = TEXTURE_DUNGEON_SIZE_Y * i + TEXTURE_PLAYER_SIZE_Y;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].vtx.z = 0.0f;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][1].vtx += *posCamera;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].vtx.x = TEXTURE_DUNGEON_SIZE_X * (i + 1);
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].vtx.y = TEXTURE_DUNGEON_SIZE_Y * j + TEXTURE_PLAYER_SIZE_Y;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].vtx.z = 0.0f;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][1].vtx += *posCamera;
 
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].vtx.x = TEXTURE_DUNGEON_SIZE_X * j;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].vtx.y = TEXTURE_DUNGEON_SIZE_Y * (i + 1) + TEXTURE_PLAYER_SIZE_Y;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].vtx.z = 0.0f;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][2].vtx += *posCamera;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].vtx.x = TEXTURE_DUNGEON_SIZE_X * i;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].vtx.y = TEXTURE_DUNGEON_SIZE_Y * (j + 1) + TEXTURE_PLAYER_SIZE_Y;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].vtx.z = 0.0f;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][2].vtx += *posCamera;
 
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].vtx.x = TEXTURE_DUNGEON_SIZE_X * (j + 1);
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].vtx.y = TEXTURE_DUNGEON_SIZE_Y * (i + 1) + TEXTURE_PLAYER_SIZE_Y;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].vtx.z = 0.0f;
-			g_vertexWkDungeon[MAP_WIDTH * i + j][3].vtx += *posCamera;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].vtx.x = TEXTURE_DUNGEON_SIZE_X * (i + 1);
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].vtx.y = TEXTURE_DUNGEON_SIZE_Y * (j + 1) + TEXTURE_PLAYER_SIZE_Y;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].vtx.z = 0.0f;
+			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].vtx += *posCamera;
 		}
 	}
 }
@@ -294,24 +309,23 @@ void SetDungeon(void)
 {
 	g_Rcount = 0;
 	g_Scount = 0;
-	for (int i = 0; i < MAP_HEIGHT; i++)
+	for (int i = 0; i < MAP_WIDTH; i++)
 	{
-		for (int j = 0; j < MAP_WIDTH; j++)
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			g_map[i][j] = MAP_NOT_OBJECT;
 		}
 	}
-	g_space[0].baseY = 0;
 	g_space[0].baseX = 0;
-	g_space[0].height = MAP_HEIGHT;
+	g_space[0].baseY = 0;
 	g_space[0].width = MAP_WIDTH;
+	g_space[0].height = MAP_HEIGHT;
 	Split(g_space);
 	MakeRoom();
 	MakeTrail();
 	DeleteTrail();
 	SetStart(rand() % (g_Scount + 1));
 	SetExit(rand() % (g_Scount + 1));
-	SetTextureDungeon();
 }
 
 void SplitX(SPACE *t_room, SPACE *splited_room1, SPACE *splited_room2)
@@ -322,12 +336,12 @@ void SplitX(SPACE *t_room, SPACE *splited_room1, SPACE *splited_room2)
 	{
 		for (int i = t_room->baseY; i < t_room->baseY + t_room->height; i++)
 		{
-			g_map[i][num] = MAP_BOUNDARY;
+			g_map[num][i] = MAP_BOUNDARY;
 		}
-		boundary[g_Scount].baseY = t_room->baseY;
 		boundary[g_Scount].baseX = num;
-		boundary[g_Scount].height = t_room->height;
+		boundary[g_Scount].baseY = t_room->baseY;
 		boundary[g_Scount].width = 0;
+		boundary[g_Scount].height = t_room->height;
 		g_Scount++;
 	}
 	splited_room1->baseX = t_room->baseX;
@@ -349,12 +363,12 @@ void SplitY(SPACE *t_room, SPACE *splited_room1, SPACE *splited_room2)
 	{
 		for (int i = t_room->baseX; i < t_room->baseX + t_room->width; i++)
 		{
-			g_map[num][i] = MAP_BOUNDARY;
+			g_map[i][num] = MAP_BOUNDARY;
 		}
-		boundary[g_Scount].baseY = num;
 		boundary[g_Scount].baseX = t_room->baseX;
-		boundary[g_Scount].height = 0;
+		boundary[g_Scount].baseY = num;
 		boundary[g_Scount].width = t_room->width;
+		boundary[g_Scount].height = 0;
 		g_Scount++;
 	}
 	splited_room1->baseX = t_room->baseX;
@@ -410,44 +424,44 @@ void MakeRoom(void)
 		g_space[i].room.spawnEnemy = 0;
 		g_space[i].room.clear = false;
 
-		for (int y = g_space[i].room.baseY; y < g_space[i].room.baseY + g_space[i].room.height; y++)
+		for (int x = g_space[i].room.baseX; x < g_space[i].room.baseX + g_space[i].room.width; x++)
 		{
-			for (int x = g_space[i].room.baseX; x < g_space[i].room.baseX + g_space[i].room.width; x++)
+			for (int y = g_space[i].room.baseY; y < g_space[i].room.baseY + g_space[i].room.height; y++)
 			{
 				if (y == g_space[i].room.baseY && x == g_space[i].room.baseX)
 				{
-					g_map[y][x] = MAP_WALL_UPLEFT;
+					g_map[x][y] = MAP_WALL_UPLEFT;
 				}
 				else if (y == g_space[i].room.baseY && x == g_space[i].room.baseX + g_space[i].room.width - 1)
 				{
-					g_map[y][x] = MAP_WALL_UPRIGHT;
+					g_map[x][y] = MAP_WALL_UPRIGHT;
 				}
 				else if (y == g_space[i].room.baseY + g_space[i].room.height - 1 && x == g_space[i].room.baseX)
 				{
-					g_map[y][x] = MAP_WALL_DOWNLEFT;
+					g_map[x][y] = MAP_WALL_DOWNLEFT;
 				}
 				else if (y == g_space[i].room.baseY + g_space[i].room.height - 1 && x == g_space[i].room.baseX + g_space[i].room.width - 1)
 				{
-					g_map[y][x] = MAP_WALL_DOWNRIGHT;
+					g_map[x][y] = MAP_WALL_DOWNRIGHT;
 				}
 				else if (y == g_space[i].room.baseY)
 				{
-					g_map[y][x] = MAP_WALL_UP;
+					g_map[x][y] = MAP_WALL_UP;
 				}
 				else if (y == g_space[i].room.baseY + g_space[i].room.height - 1)
 				{
-					g_map[y][x] = MAP_WALL_DOWN;
+					g_map[x][y] = MAP_WALL_DOWN;
 				}
 				else if (x == g_space[i].room.baseX)
 				{
-					g_map[y][x] = MAP_WALL_LEFT;
+					g_map[x][y] = MAP_WALL_LEFT;
 				}
 				else if (x == g_space[i].room.baseX + g_space[i].room.width - 1)
 				{
-					g_map[y][x] = MAP_WALL_RIGHT;
+					g_map[x][y] = MAP_WALL_RIGHT;
 				}
 				else {
-					g_map[y][x] = MAP_ROOM;
+					g_map[x][y] = MAP_ROOM;
 				}
 			}
 		}
@@ -466,7 +480,7 @@ void MakeTrail(void)
 				trailY = g_space[i].room.baseY + (rand() % (g_space[i].room.height - 2) + 1);
 				for (int x = g_space[i].room.baseX; x >= g_space[i].baseX - 1; x--)
 				{
-					g_map[trailY][x] = MAP_TRAIL;
+					g_map[x][trailY] = MAP_TRAIL;
 				}
 			}
 			if (g_space[i].baseX + g_space[i].width < MAP_WIDTH)
@@ -475,40 +489,10 @@ void MakeTrail(void)
 				trailY = g_space[i].room.baseY + (rand() % (g_space[i].room.height - 2) + 1);
 				for (int x = trailX; x <= g_space[i].baseX + g_space[i].width; x++)
 				{
-					g_map[trailY][x] = MAP_TRAIL;
+					g_map[x][trailY] = MAP_TRAIL;
 				}
 			}
 		}
-		//else
-		//{
-		//	if (g_space[i].baseX > 0)
-		//	{
-		//		trailY = g_space[i].room.baseY + (rand() % (g_space[i].room.height / 2 - 2) + 1);
-		//		for (int x = g_space[i].room.baseX; x >= g_space[i].baseX - 1; x--)
-		//		{
-		//			g_map[trailY][x] = MAP_TRAIL;
-		//		}
-		//		trailY = g_space[i].room.baseY + g_space[i].room.height / 2 + (rand() % (g_space[i].room.height / 2 - 2) + 1);
-		//		for (int x = g_space[i].room.baseX; x >= g_space[i].baseX - 1; x--)
-		//		{
-		//			g_map[trailY][x] = MAP_TRAIL;
-		//		}
-		//	}
-		//	if (g_space[i].baseX + g_space[i].width < MAP_WIDTH)
-		//	{
-		//		trailX = g_space[i].room.baseX + g_space[i].room.width - 1;//g_space[i].room.baseX + (rand() % (g_space[i].room.width - 2) + 1);
-		//		trailY = g_space[i].room.baseY + (rand() % (g_space[i].room.height / 2 - 2) + 1);
-		//		for (int x = trailX; x <= g_space[i].baseX + g_space[i].width; x++)
-		//		{
-		//			g_map[trailY][x] = MAP_TRAIL;
-		//		}
-		//		trailY = g_space[i].room.baseY + g_space[i].room.height / 2 + (rand() % (g_space[i].room.height / 2 - 2) + 1);
-		//		for (int x = trailX; x <= g_space[i].baseX + g_space[i].width; x++)
-		//		{
-		//			g_map[trailY][x] = MAP_TRAIL;
-		//		}
-		//	}
-		//}
 		//if (g_space[i].room.width < MAP_WIDTH / 2)
 		{
 			if (g_space[i].baseY > 0)
@@ -516,7 +500,7 @@ void MakeTrail(void)
 				trailX = g_space[i].room.baseX + (rand() % (g_space[i].room.width - 2) + 1);
 				for (int y = g_space[i].room.baseY; y >= g_space[i].baseY - 1; y--)
 				{
-					g_map[y][trailX] = MAP_TRAIL;
+					g_map[trailX][y] = MAP_TRAIL;
 				}
 			}
 			if (g_space[i].baseY + g_space[i].height < MAP_HEIGHT)
@@ -525,40 +509,10 @@ void MakeTrail(void)
 				trailY = g_space[i].room.baseY + g_space[i].room.height - 1;
 				for (int y = trailY; y <= g_space[i].baseY + g_space[i].height; y++)
 				{
-					g_map[y][trailX] = MAP_TRAIL;
+					g_map[trailX][y] = MAP_TRAIL;
 				}
 			}
 		}
-		/*else
-		{
-			if (g_space[i].baseY > 0)
-			{
-				trailX = g_space[i].room.baseX + (rand() % (g_space[i].room.width / 2 - 2) + 1);
-				for (int y = g_space[i].room.baseY; y >= g_space[i].baseY - 1; y--)
-				{
-					g_map[y][trailX] = MAP_TRAIL;
-				}
-				trailX = g_space[i].room.baseX + g_space[i].room.width / 2 + (rand() % (g_space[i].room.width / 2 - 2) + 1);
-				for (int y = g_space[i].room.baseY; y >= g_space[i].baseY - 1; y--)
-				{
-					g_map[y][trailX] = MAP_TRAIL;
-				}
-			}
-			if (g_space[i].baseY + g_space[i].height < MAP_HEIGHT)
-			{
-				trailX = g_space[i].room.baseX + (rand() % (g_space[i].room.width / 2 - 2) + 1);
-				trailY = g_space[i].room.baseY + g_space[i].room.height - 1;
-				for (int y = trailY; y <= g_space[i].baseY + g_space[i].height; y++)
-				{
-					g_map[y][trailX] = MAP_TRAIL;
-				}
-				trailX = g_space[i].room.baseX + g_space[i].room.width / 2 + (rand() % (g_space[i].room.width / 2 - 2) + 1);
-				for (int y = trailY; y <= g_space[i].baseY + g_space[i].height; y++)
-				{
-					g_map[y][trailX] = MAP_TRAIL;
-				}
-			}
-		}*/
 	}
 }
 
@@ -567,83 +521,36 @@ void DeleteTrail(void)
 	bool flag;
 	for (int i = 0; i < g_Scount; i++)
 	{
-		if (boundary[i].width == 0)
-		{
-			flag = false;
-			for (int y = boundary[i].baseY; y < boundary[i].baseY + boundary[i].height; y++)
-			{
-				if (!flag && g_map[y][boundary[i].baseX] == MAP_BOUNDARY)
-				{
-					g_map[y][boundary[i].baseX] = MAP_NOT_OBJECT;
-				}
-				if (flag && g_map[y][boundary[i].baseX] != MAP_TRAIL)
-				{
-					g_map[y][boundary[i].baseX] = MAP_PATH;
-				}
-				if (g_map[y][boundary[i].baseX] == MAP_TRAIL)
-				{
-					flag = !flag;
-				}
-			}
-			flag = false;
-			for (int y = boundary[i].baseY + boundary[i].height - 1; y>= boundary[i].baseY; y--)
-			{
-				if (!flag && (g_map[y][boundary[i].baseX] == MAP_BOUNDARY || g_map[y][boundary[i].baseX] == MAP_PATH))
-				{
-					g_map[y][boundary[i].baseX] = MAP_NOT_OBJECT;
-				}
-				if (flag && g_map[y][boundary[i].baseX] != MAP_TRAIL)
-				{
-					g_map[y][boundary[i].baseX] = MAP_PATH;
-				}
-				if (g_map[y][boundary[i].baseX] == MAP_TRAIL)
-				{
-					if (flag)
-					{
-						flag = false;
-						break;
-					}
-					flag = true;
-				}
-			}
-			if (flag)
-			{
-				for (int y = boundary[i].baseY; g_map[y][boundary[i].baseX] == MAP_PATH; y++)
-				{
-					g_map[y][boundary[i].baseX] = MAP_NOT_OBJECT;
-				}
-			}
-		}
 		if (boundary[i].height == 0)
 		{
 			flag = false;
 			for (int x = boundary[i].baseX; x < boundary[i].baseX + boundary[i].width; x++)
 			{
-				if (!flag && g_map[boundary[i].baseY][x] == MAP_BOUNDARY)
+				if (!flag && g_map[x][boundary[i].baseY] == MAP_BOUNDARY)
 				{
-					g_map[boundary[i].baseY][x] = MAP_NOT_OBJECT;
+					g_map[x][boundary[i].baseY] = MAP_NOT_OBJECT;
 				}
-				if (flag && g_map[boundary[i].baseY][x] != MAP_TRAIL)
+				if (flag && g_map[x][boundary[i].baseY] != MAP_TRAIL)
 				{
-					g_map[boundary[i].baseY][x] = MAP_PATH;
+					g_map[x][boundary[i].baseY] = MAP_PATH;
 				}
-				if (g_map[boundary[i].baseY][x] == MAP_TRAIL)
+				if (g_map[x][boundary[i].baseY] == MAP_TRAIL)
 				{
 					flag = !flag;
 				}
 			}
 			flag = false;
-			for (int x = boundary[i].baseX + boundary[i].width - 1; x >= boundary[i].baseX; x--)
+			for (int x = boundary[i].baseX + boundary[i].width - 1; x>= boundary[i].baseX; x--)
 			{
-				if (!flag && (g_map[boundary[i].baseY][x] == MAP_BOUNDARY || g_map[boundary[i].baseY][x] == MAP_PATH))
+				if (!flag && (g_map[x][boundary[i].baseY] == MAP_BOUNDARY || g_map[x][boundary[i].baseY] == MAP_PATH))
 				{
-					g_map[boundary[i].baseY][x] = MAP_NOT_OBJECT;
+					g_map[x][boundary[i].baseY] = MAP_NOT_OBJECT;
 				}
-				if (flag && g_map[boundary[i].baseY][x] != MAP_TRAIL)
+				if (flag && g_map[x][boundary[i].baseY] != MAP_TRAIL)
 				{
-					g_map[boundary[i].baseY][x] = MAP_PATH;
+					g_map[x][boundary[i].baseY] = MAP_PATH;
 				}
-				if (g_map[boundary[i].baseY][x] == MAP_TRAIL)
+				if (g_map[x][boundary[i].baseY] == MAP_TRAIL)
 				{
 					if (flag)
 					{
@@ -655,9 +562,56 @@ void DeleteTrail(void)
 			}
 			if (flag)
 			{
-				for (int x = boundary[i].baseX; g_map[boundary[i].baseY][x] == MAP_PATH; x++)
+				for (int x = boundary[i].baseX; g_map[x][boundary[i].baseY] == MAP_PATH; x++)
 				{
-					g_map[boundary[i].baseY][x] = MAP_NOT_OBJECT;
+					g_map[x][boundary[i].baseY] = MAP_NOT_OBJECT;
+				}
+			}
+		}
+		if (boundary[i].width == 0)
+		{
+			flag = false;
+			for (int y = boundary[i].baseY; y < boundary[i].baseY + boundary[i].height; y++)
+			{
+				if (!flag && g_map[boundary[i].baseX][y] == MAP_BOUNDARY)
+				{
+					g_map[boundary[i].baseX][y] = MAP_NOT_OBJECT;
+				}
+				if (flag && g_map[boundary[i].baseX][y] != MAP_TRAIL)
+				{
+					g_map[boundary[i].baseX][y] = MAP_PATH;
+				}
+				if (g_map[boundary[i].baseX][y] == MAP_TRAIL)
+				{
+					flag = !flag;
+				}
+			}
+			flag = false;
+			for (int y = boundary[i].baseY + boundary[i].height - 1; y >= boundary[i].baseY; y--)
+			{
+				if (!flag && (g_map[boundary[i].baseX][y] == MAP_BOUNDARY || g_map[boundary[i].baseX][y] == MAP_PATH))
+				{
+					g_map[boundary[i].baseX][y] = MAP_NOT_OBJECT;
+				}
+				if (flag && g_map[boundary[i].baseX][y] != MAP_TRAIL)
+				{
+					g_map[boundary[i].baseX][y] = MAP_PATH;
+				}
+				if (g_map[boundary[i].baseX][y] == MAP_TRAIL)
+				{
+					if (flag)
+					{
+						flag = false;
+						break;
+					}
+					flag = true;
+				}
+			}
+			if (flag)
+			{
+				for (int y = boundary[i].baseY; g_map[boundary[i].baseX][y] == MAP_PATH; y++)
+				{
+					g_map[boundary[i].baseX][y] = MAP_NOT_OBJECT;
 				}
 			}
 		}
@@ -669,10 +623,10 @@ void DeleteTrail(void)
 //=============================================================================
 void SetStart(int no)
 {
-	startY = rand() % (g_space[no].room.height - 3) + g_space[no].room.baseY + 2;
 	startX = rand() % (g_space[no].room.width - 3) + g_space[no].room.baseX + 2;
+	startY = rand() % (g_space[no].room.height - 3) + g_space[no].room.baseY + 2;
 
-	g_map[startY][startX] = MAP_START;
+	g_map[startX][startY] = MAP_START;
 
 	SetPlayer((startX + 0.5f)*TEXTURE_DUNGEON_SIZE_X, (startY + 0.5f)*TEXTURE_DUNGEON_SIZE_Y);
 	//SetCamera((startX + 0.5f)*TEXTURE_DUNGEON_SIZE_X, (startY + 0.5f)*TEXTURE_DUNGEON_SIZE_Y);
@@ -685,21 +639,21 @@ void SetExit(int no)
 {
 	do
 	{
-		exitY = rand() % (g_space[no].room.height - 3) + g_space[no].room.baseY + 2;
 		exitX = rand() % (g_space[no].room.width - 3) + g_space[no].room.baseX + 2;
+		exitY = rand() % (g_space[no].room.height - 3) + g_space[no].room.baseY + 2;
 
-		if (g_map[exitY][exitX] != MAP_START) g_map[exitY][exitX] = MAP_EXIT;
-	} while (g_map[exitY][exitX] != MAP_EXIT);
+		if (g_map[exitX][exitY] != MAP_START) g_map[exitX][exitY] = MAP_EXIT;
+	} while (g_map[exitX][exitY] != MAP_EXIT);
 	// ダンジョン生成時は出口を隠す
-	g_map[exitY][exitX] = MAP_ROOM;
+	g_map[exitX][exitY] = MAP_ROOM;
 }
 
 //=============================================================================
 // マップ情報を取得
 //=============================================================================
-int GetMap(int y, int x)
+int GetMap(int x, int y)
 {
-	return g_map[y][x];
+	return g_map[x][y];
 }
 
 //=============================================================================
@@ -707,7 +661,7 @@ int GetMap(int y, int x)
 //=============================================================================
 int GetMapByPos(float x, float y)
 {
-	return g_map[(int)(y / TEXTURE_DUNGEON_SIZE_Y)][(int)(x / TEXTURE_DUNGEON_SIZE_X)];
+	return g_map[(int)(x / TEXTURE_DUNGEON_SIZE_X)][(int)(y / TEXTURE_DUNGEON_SIZE_Y)];
 }
 
 //=============================================================================
@@ -719,17 +673,17 @@ ROOM *GetRoom(int id)
 	else return(&g_space[id].room);
 }
 
-ROOM *GetRoom2(int y, int x)
+ROOM *GetRoom2(int x, int y)
 {
-	return(GetRoom(GetRoomID(y, x)));
+	return(GetRoom(GetRoomID(x, y)));
 }
 
 //=============================================================================
 // 部屋IDを取得
 //=============================================================================
-int GetRoomID(int y, int x)
+int GetRoomID(int x, int y)
 {
-	if (g_map[y][x] == MAP_ROOM || g_map[y][x] == MAP_EXIT)
+	if (g_map[x][y] == MAP_ROOM || g_map[x][y] == MAP_EXIT)
 	{
 		for (int i = 0; i < g_Rcount; i++)
 		{
@@ -748,7 +702,7 @@ int GetRoomID(int y, int x)
 //=============================================================================
 int GetRoomIDByPos(float x, float y)
 {
-	return GetRoomID((int)(y / TEXTURE_DUNGEON_SIZE_Y), (int)(x / TEXTURE_DUNGEON_SIZE_X));
+	return GetRoomID((int)(x / TEXTURE_DUNGEON_SIZE_X), (int)(y / TEXTURE_DUNGEON_SIZE_Y));
 }
 
 //=============================================================================
@@ -756,7 +710,7 @@ int GetRoomIDByPos(float x, float y)
 //=============================================================================
 int GetExitRoomID(void)
 {
-	return GetRoomID(exitY, exitX);
+	return GetRoomID(exitX, exitY);
 }
 
 //=============================================================================
@@ -766,18 +720,24 @@ void EnterRoom(int ID)
 {
 	ROOM *room = &g_space[ID].room;
 
-	if (g_map[startY][startX] == MAP_START)
+	// スタート地点を通常の部屋判定に
+	if (g_map[startX][startY] == MAP_START)
 	{
-		g_map[startY][startX] = MAP_ROOM;
+		g_map[startX][startY] = MAP_ROOM;
 	}
 
+	// 未クリア時の処理
 	if (!room->clear)
 	{
 		RefreshFont();
 		SetString("-しょうもくひょう-", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE, TEXTURE_FONT_SIZE, 120);
-		SetString("へやのてきを　ぜんめつせよ", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE * 2, TEXTURE_FONT_SIZE, 120);
+		SetString("へやのてきを　せんめつせよ", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE * 2, TEXTURE_FONT_SIZE, 120);
+
+		// 部屋範囲でミニマップの可視化
+		SetMiniMap(room->baseX, room->baseY, room->baseX + room->width, room->baseY + room->height);
 	}
 
+	// エネミーの配置がまだされていないなら配置
 	if (room->cntEnemy == 0 && !room->clear)
 	{
 		room->cntEnemy = room->width * room->height / ENEMY_INDEX;
@@ -788,9 +748,9 @@ void EnterRoom(int ID)
 		}
 	}
 
+	// エネミーのスポーン
 	int spawnNum = room->cntEnemy / 2;
 	if (spawnNum < ENEMY_ROOM_MIN_NUM) spawnNum = ENEMY_ROOM_MIN_NUM;
-
 	for (int i = 0; i < spawnNum; i++)
 	{
 		float Ex, Ey;
@@ -838,12 +798,12 @@ void ClearRoom(int ID)
 	room->clear = true;
 
 
-	if (GetRoomID(exitY, exitX) == ID)
+	if (GetRoomID(exitX, exitY) == ID)
 	{
 		SetString("ミッションクリア", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE, TEXTURE_FONT_SIZE * 2, 300);
 		SetString("かいだんを　はっけんした", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE * 3, TEXTURE_FONT_SIZE, 300);
 
-		g_map[exitY][exitX] = MAP_EXIT;
+		g_map[exitX][exitY] = MAP_EXIT;
 		SetTextureExit();
 	}
 	else

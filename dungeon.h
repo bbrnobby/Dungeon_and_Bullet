@@ -12,18 +12,18 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MIN_ROOM_WIDTH				(12)
-#define MIN_ROOM_HEIGHT				(10)
-#define MAX_ROOM_WIDTH				(24)
-#define MAX_ROOM_HEIGHT				(20)
-#define MAP_WIDTH					(48)
-#define MAP_HEIGHT					(40)
-#define MAX_ROOM_COUNT				(20)
+#define MIN_ROOM_WIDTH				(10)	// 部屋の最小横サイズ
+#define MIN_ROOM_HEIGHT				(8)		// 部屋の最小縦サイズ
+#define MAX_ROOM_WIDTH				(18)	// 部屋の最大横サイズ
+#define MAX_ROOM_HEIGHT				(15)	// 部屋の最大縦サイズ
+#define MAP_WIDTH					(48)	// マップの横サイズ
+#define MAP_HEIGHT					(40)	// マップの縦サイズ
+#define MAX_ROOM_COUNT				(12)	// 部屋の最大数
 
 #define TEXTURE_DUNGEON_SIZE_X		(128)	// テクスチャサイズ
 #define TEXTURE_DUNGEON_SIZE_Y		(128)	// 同上
 
-#define SPAWN_DISTANCE				(250)
+#define SPAWN_DISTANCE				(250)	// エネミーのスポーン距離
 
 
 //*****************************************************************************
@@ -76,13 +76,12 @@ void UninitDungeon(void);
 void UpdateDungeon(void);
 void DrawDungeon(void);
 
-void SetDungeon(void);
-int GetMap(int y, int x);
+int GetMap(int x, int y);
 int GetMapByPos(float x, float y);
 
 ROOM *GetRoom(int id);
-ROOM *GetRoom2(int y, int x);
-int GetRoomID(int y, int x);
+ROOM *GetRoom2(int x, int y);
+int GetRoomID(int x, int y);
 int GetRoomIDByPos(float x, float y);
 int GetExitRoomID(void);
 

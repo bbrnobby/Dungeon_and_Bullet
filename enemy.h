@@ -39,7 +39,6 @@
 #define ENEMY_KNOCKBACK_SPEED			(15.0f)	// エネミー1のノックバック速度
 #define ENEMY_AVOID_SPEED				(0.5f)	// エネミー1の押しのけ速度
 #define ENEMY_FRICTION					(0.85f)	// エネミー1の慣性
-#define ENEMY_BULLET_DURATION			(1000)	// エネミー1のバレット持続時間
 enum ENEMY_STATE
 {
 	ENEMY_WAIT,

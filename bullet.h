@@ -11,7 +11,6 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_GAME_BULLET				_T("data/TEXTURE/bullet001.png")	// 画像
-#define TEXTURE_BULLET_SIZE				(12)		// テクスチャサイズ
 
 #define TEXTURE_PATTERN_DIVIDE_X_BULLET	(2)			// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y_BULLET	(2)			// アニメパターンのテクスチャ内分割数（Y)
@@ -20,11 +19,20 @@
 
 #define BULLET_MAX						(50)		// 表示される弾の最大数
 
-#define BULLET_SPEED_001				(25.0f)		// バレットの移動スピード
-#define BULLET_SPEED_ENEMY				(5.0f)		// 敵バレットの移動スピード
-#define BULLET_SPINSPEED_001			(0.3f)		// 弾の回転速度
+#define BULLET_SIZE_PISTOL				(16)		// バレットの大きさ
+#define BULLET_SIZE_SHOTGUN				(9)			// バレットの大きさ
+#define BULLET_SIZE_ENEMY				(25)		// バレットの大きさ
 
-enum shooter
+#define BULLET_SPEED_PISTOL				(35.0f)		// バレットの移動スピード
+#define BULLET_SPEED_SHOTGUN			(30.0f)		// バレットの移動スピード
+#define BULLET_SPEED_ENEMY				(5.0f)		// 敵バレットの移動スピード
+#define BULLET_SPINSPEED				(0.3f)		// 弾の回転速度
+
+#define BULLET_DURATION_PISTOL			(120)		// バレットの持続時間
+#define BULLET_DURATION_SHOTGUN			(15)		// バレットの持続時間
+#define BULLET_DURATION_ENEMY			(1000)		// エネミーのバレット持続時間
+
+enum type
 {
 	PLAYER_BULLET_PISTOL,
 	PLAYER_BULLET_SHOTGUN,
@@ -51,8 +59,7 @@ typedef struct	// バレット構造体
 	float			Radius;						// 半径
 	float			BaseAngle;					// 角度
 
-	int				shooter;
-
+	int				type;						// 弾のタイプ
 } BULLET;
 
 
@@ -64,7 +71,7 @@ HRESULT InitBullet(int type);
 void UninitBullet(void);
 void UpdateBullet(void);
 void DrawBullet(void);
-void SetBullet(D3DXVECTOR3 pos, float rot, int shooter, int duration);
+void SetBullet(D3DXVECTOR3 pos, float rot, int type);
 BULLET *GetBullet(int no);
 
 

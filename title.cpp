@@ -239,7 +239,7 @@ void UpdateTitle(void)
 			
 			for (int i = 0; i < LOGO_MAX; i++)
 			{
-				g_posTitleLogo[i].x = 0.0f;
+				g_posTitleLogo[i] = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 				// ’¸“_À•W‚ÌÝ’è
 				g_vertexWkTitleLogo[0 + i * NUM_VERTEX].vtx = g_posTitleLogo[i] + D3DXVECTOR3(192 * (i / 7) + (128 - 32 * (i / 7)) * (i % 7), 32 + 96 * (i / 7), 0.0f);

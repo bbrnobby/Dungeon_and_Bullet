@@ -63,9 +63,8 @@ HRESULT InitBullet(int type)
 		bullet->PatternAnim = 0;
 
 		bullet->spin = false;
-		D3DXVECTOR2 temp = D3DXVECTOR2(TEXTURE_BULLET_SIZE, TEXTURE_BULLET_SIZE);
-		bullet->Radius = D3DXVec2Length(&temp);					// エネミーの半径を初期化
-		bullet->BaseAngle = atan2f(TEXTURE_BULLET_SIZE, TEXTURE_BULLET_SIZE);	// エネミーの角度を初期化
+		bullet->Radius = BULLET_SIZE_PISTOL;					// エネミーの半径を初期化
+		bullet->BaseAngle = atan2f(BULLET_SIZE_PISTOL, BULLET_SIZE_PISTOL);	// エネミーの角度を初期化
 
 		bullet->Texture = g_pD3DTextureBullet;					// テクスチャ情報
 		MakeVertexBullet(i);									// 頂点情報の作成
@@ -108,28 +107,29 @@ void UpdateBullet(void)
 
 			bullet->duration--;
 			if (bullet->duration == 0 || (
-				GetMapByPos(bullet->pos.x - TEXTURE_BULLET_SIZE * 1.5, bullet->pos.y - TEXTURE_BULLET_SIZE * 2) != MAP_ROOM &&
-				GetMapByPos(bullet->pos.x + TEXTURE_BULLET_SIZE * 1.5, bullet->pos.y - TEXTURE_BULLET_SIZE * 2) != MAP_ROOM &&
-				GetMapByPos(bullet->pos.x - TEXTURE_BULLET_SIZE * 1.5, bullet->pos.y + TEXTURE_BULLET_SIZE * 1) != MAP_ROOM &&
-				GetMapByPos(bullet->pos.x + TEXTURE_BULLET_SIZE * 1.5, bullet->pos.y + TEXTURE_BULLET_SIZE * 1) != MAP_ROOM))
+				bullet->type == ENEMY_BULLET &&
+				GetMapByPos(bullet->pos.x - bullet->Radius * 1.5, bullet->pos.y - bullet->Radius * 2) != MAP_ROOM &&
+				GetMapByPos(bullet->pos.x + bullet->Radius * 1.5, bullet->pos.y - bullet->Radius * 2) != MAP_ROOM &&
+				GetMapByPos(bullet->pos.x - bullet->Radius * 1.5, bullet->pos.y + bullet->Radius * 1) != MAP_ROOM &&
+				GetMapByPos(bullet->pos.x + bullet->Radius * 1.5, bullet->pos.y + bullet->Radius * 1) != MAP_ROOM))
 			{
 				bullet->use = false;
-				bullet->pos.x = -100.0f;
 				bullet->vec.x = 0.0f;
 				bullet->vec.y = 0.0f;
 				continue;
 			}
 
-			if (bullet->spin) bullet->rot.z += BULLET_SPINSPEED_001;
+			if (bullet->spin) bullet->rot.z += BULLET_SPINSPEED;
 
 			SetVertexBullet(i);				// 移動後の座標で頂点を設定
-			switch(bullet->shooter)
+			switch(bullet->type)
 			{
 			case PLAYER_BULLET_PISTOL:
-				SetParticleLine(bullet->pos, bullet->vec, D3DCOLOR_RGBA(255, 128, 0, 255), TEXTURE_BULLET_SIZE, TEXTURE_BULLET_SIZE, PARTICLE_LIFE);
+			case PLAYER_BULLET_SHOTGUN:
+				SetParticleLine(bullet->pos, bullet->vec, D3DCOLOR_RGBA(255, 128, 0, 255), bullet->Radius, bullet->Radius, PARTICLE_LIFE);
 				break;
 			case ENEMY_BULLET:
-				SetParticleLine(bullet->pos, bullet->vec, D3DCOLOR_RGBA(255, 0, 0, 255), TEXTURE_BULLET_SIZE, TEXTURE_BULLET_SIZE, PARTICLE_LIFE);
+				SetParticleLine(bullet->pos, bullet->vec, D3DCOLOR_RGBA(255, 0, 0, 255), bullet->Radius, bullet->Radius, PARTICLE_LIFE);
 				break;
 			}
 		}
@@ -245,9 +245,10 @@ void SetVertexBullet( int no )
 //=============================================================================
 // バレットの発射設定
 //=============================================================================
-void SetBullet(D3DXVECTOR3 pos, float rot, int shooter, int duration)
+void SetBullet(D3DXVECTOR3 pos, float rot, int type)
 {
 	BULLET *bullet = bulletWk;				// バレットのポインターを初期化
+	float rate;
 
 	// もし未使用の弾が無かったら発射しない( = これ以上撃てないって事 )
 	for (int i = 0; i < BULLET_MAX; i++, bullet++)
@@ -255,29 +256,42 @@ void SetBullet(D3DXVECTOR3 pos, float rot, int shooter, int duration)
 		if (!bullet->use)					// 未使用状態のバレットを見つける
 		{
 			bullet->use = true;				// 使用状態へ変更する
-			bullet->shooter = shooter;
+			bullet->type = type;
 			bullet->pos = pos;				// 座標をセット
 			bullet->rot.z = 0.0f;
 
 			// バレットの移動処理
-			if (shooter == PLAYER_BULLET_PISTOL)
+			switch (type)
 			{
+			case PLAYER_BULLET_PISTOL:
 				bullet->spin = true;
 				bullet->PatternAnim = 1;
-				bullet->duration = duration;
+				bullet->duration = BULLET_DURATION_PISTOL;
+				bullet->Radius = BULLET_SIZE_PISTOL;
 
-				bullet->vec.x = cosf(rot) * BULLET_SPEED_001;
-				bullet->vec.y = sinf(rot) * BULLET_SPEED_001;
-			}
-			else if(shooter == ENEMY_BULLET)
-			{
+				bullet->vec.x = cosf(rot) * BULLET_SPEED_PISTOL;
+				bullet->vec.y = sinf(rot) * BULLET_SPEED_PISTOL;
+				break;
+			case PLAYER_BULLET_SHOTGUN:
+				bullet->spin = true;
+				bullet->PatternAnim = 1;
+				bullet->duration = BULLET_DURATION_SHOTGUN;
+				bullet->Radius = BULLET_SIZE_SHOTGUN;
+
+				rate = (rand() % 50 + 75) / 100.0f;
+
+				bullet->vec.x = cosf(rot) * BULLET_SPEED_SHOTGUN * rate;
+				bullet->vec.y = sinf(rot) * BULLET_SPEED_SHOTGUN * rate;
+				break;
+			case ENEMY_BULLET:
 				bullet->spin = false;
 				bullet->PatternAnim = 2;
-				bullet->duration = duration;
+				bullet->duration = BULLET_DURATION_ENEMY;
+				bullet->Radius = BULLET_SIZE_ENEMY;
 
 				bullet->vec.x = cosf(rot) * BULLET_SPEED_ENEMY;
 				bullet->vec.y = sinf(rot) * BULLET_SPEED_ENEMY;
-
+				break;
 			}
 			SetTextureBullet(i, bullet->PatternAnim);
 

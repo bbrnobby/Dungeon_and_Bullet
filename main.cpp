@@ -824,7 +824,7 @@ void CheckHit(void)
 
 		for (j = 0, bullet = GetBullet(0); j < BULLET_MAX; j++, bullet++)
 		{
-			if (bullet->use == false || bullet->shooter == ENEMY_BULLET) continue;
+			if (bullet->use == false || bullet->type == ENEMY_BULLET) continue;
 
 			if (CheckHitBC(treasure->pos, bullet->pos, TEXTURE_TREASURE_SIZE / 2, TEXTURE_PLAYER_SIZE_X))
 			{
@@ -899,17 +899,24 @@ void CheckHit(void)
 	{
 		if (bullet->use == false) continue;
 
-		if (bullet->shooter != ENEMY_BULLET)
+		if (bullet->type != ENEMY_BULLET)
 		{
 			for (j = 0, enemy = GetEnemy(0); j < ENEMY_MAX; j++, enemy++)
 			{
 				if (enemy->use == false || enemy->state == ENEMY_SPAWN || enemy->state == ENEMY_DESPAWN || enemy->state == ENEMY_DEAD) continue;
 
-				if (CheckHitBC(bullet->pos, enemy->pos, TEXTURE_BULLET_SIZE, TEXTURE_ENEMY_SIZE_X))
+				if (CheckHitBC(bullet->pos, enemy->pos, bullet->Radius, TEXTURE_ENEMY_SIZE_X))
 				{
 					bullet->use = false;	// 弾の消滅処理を行い
 
-					KnockBackEnemy(enemy, ENEMY_KNOCKBACK_SPEED, atan2(bullet->vec.y, bullet->vec.x));
+					if (bullet->type == PLAYER_BULLET_SHOTGUN)
+					{
+						KnockBackEnemy(enemy, ENEMY_KNOCKBACK_SPEED, atan2(bullet->vec.y, bullet->vec.x));
+					}
+					else
+					{
+						KnockBackEnemy(enemy, ENEMY_KNOCKBACK_SPEED, atan2(enemy->pos.y - bullet->pos.y, enemy->pos.x - bullet->pos.x));
+					}
 					// 敵のHP減少処理
 					enemy->hp--;
 					if (enemy->hp <= 0)
@@ -927,12 +934,12 @@ void CheckHit(void)
 		// ボスと弾(BC)
 
 		// 自分と敵の弾(BC)
-		if (bullet->shooter != PLAYER_BULLET_PISTOL)
+		if (bullet->type != PLAYER_BULLET_PISTOL)
 		{
 			player = GetPlayer();
 			if (player->use == false || player->invincible) continue;
 
-			if (CheckHitBC(bullet->pos, player->pos, TEXTURE_BULLET_SIZE, TEXTURE_PLAYER_SIZE_X))
+			if (CheckHitBC(bullet->pos, player->pos, bullet->Radius, TEXTURE_PLAYER_SIZE_X))
 			{
 				bullet->use = false;	// 弾の消滅処理を行い
 
@@ -951,10 +958,10 @@ void CheckHit(void)
 		}
 	}
 
-	if (GetMapByPos(player->pos.x, player->pos.y) == MAP_EXIT)
+	// 階段
+	if (GetRoom(GetExitRoomID())->clear && GetMapByPos(player->pos.x, player->pos.y) != MAP_EXIT)
 	{
-		player->movable = false;
-		SetFade(FADE_W_OUT, STAGE_GAME_END);
+		SetFade(FADE_B_OUT, STAGE_GAME_END);
 	}
 }
 
@@ -1016,6 +1023,7 @@ void InitGame(void)
 	InitTreasure(1);	// 宝箱の再初期化
 	InitDrop(1);		// ドロップの再初期化
 	InitParticle(1);	// パーティクルの再初期化
+	InitMiniMap();		// ミニマップの再初期化
 
 	// サウンドのロードと再生
 	g_pBGM = LoadSound(BGM_MAZE);

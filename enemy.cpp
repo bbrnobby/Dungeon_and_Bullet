@@ -441,34 +441,37 @@ void DeleteEnemy(ENEMY *enemy)
 
 void SetState(ENEMY *enemy, int state)
 {
-	switch (state)
+	if (enemy->use)
 	{
-	case ENEMY_WAIT:
-		enemy->interval = ENEMY_INTERVAL_WAIT;
-		break;
-	case ENEMY_DAMAGE:
-		enemy->interval = ENEMY_INTERVAL_DAMAGE;
-		break;
-	case ENEMY_MOVE:
-		MoveEnemy(enemy);
-		enemy->interval = rand() % ENEMY_INTERVAL_MOVE;
-		break;
-	case ENEMY_ATTACK:
-		AttackEnemy(enemy);
-		enemy->interval = ENEMY_INTERVAL_ATTACK;
-		break;
-	case ENEMY_DEAD:
-		enemy->interval = ENEMY_INTERVAL_DEAD;
-		break;
-	case ENEMY_SPAWN:
-		if (enemy->state == ENEMY_DESPAWN) break;
-	case ENEMY_DESPAWN:
-		if (enemy->state == ENEMY_SPAWN) break;
-	default:
-		enemy->interval = ENEMY_INTERVAL_FADE;
-		break;
+		switch (state)
+		{
+		case ENEMY_WAIT:
+			enemy->interval = ENEMY_INTERVAL_WAIT;
+			break;
+		case ENEMY_DAMAGE:
+			enemy->interval = ENEMY_INTERVAL_DAMAGE;
+			break;
+		case ENEMY_MOVE:
+			MoveEnemy(enemy);
+			enemy->interval = rand() % ENEMY_INTERVAL_MOVE;
+			break;
+		case ENEMY_ATTACK:
+			AttackEnemy(enemy);
+			enemy->interval = ENEMY_INTERVAL_ATTACK;
+			break;
+		case ENEMY_DEAD:
+			enemy->interval = ENEMY_INTERVAL_DEAD;
+			break;
+		case ENEMY_SPAWN:
+			if (enemy->state == ENEMY_DESPAWN) break;
+		case ENEMY_DESPAWN:
+			if (enemy->state == ENEMY_SPAWN) break;
+		default:
+			enemy->interval = ENEMY_INTERVAL_FADE;
+			break;
+		}
+		enemy->state = state;
 	}
-	enemy->state = state;
 }
 
 void MoveEnemy(ENEMY *enemy)
@@ -511,10 +514,10 @@ void AttackEnemy(ENEMY *enemy)
 	PLAYER *player = GetPlayer();
 	float rotZ = atan2(player->pos.y - enemy->pos.y, player->pos.x - enemy->pos.x);
 
-	//enemy->subVec.x = -BULLET_SPEED_001 * cosf(rotZ);
-	//enemy->subVec.y = -BULLET_SPEED_001 * sinf(rotZ);
+	//enemy->subVec.x = -BULLET_SPEED_PISTOL * cosf(rotZ);
+	//enemy->subVec.y = -BULLET_SPEED_PISTOL * sinf(rotZ);
 
-	SetBullet(enemy->pos-enemy->subVec, rotZ, ENEMY_BULLET, ENEMY_BULLET_DURATION);
+	SetBullet(enemy->pos-enemy->subVec, rotZ, ENEMY_BULLET);
 
 	enemy->dir = (int)(rotZ / D3DX_PI * 2 + 4.5) % 4;
 }

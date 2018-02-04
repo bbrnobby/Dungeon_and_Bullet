@@ -10,8 +10,8 @@
 #include "main.h"
 
 // マクロ定義
-#define TEXTURE_MINIMAP_SIZE_X	(4.0f)	// テクスチャサイズ
-#define TEXTURE_MINIMAP_SIZE_Y	(4.0f)	// 同上
+#define MINIMAP_SIZE_SMALL	(4.0f)	// ミニマップのサイズ
+#define MINIMAP_SIZE_LARGE	(16.0f)	// ミニマップのサイズ
 //*****************************************************************************
 // 構造体宣言
 //*****************************************************************************
@@ -24,5 +24,6 @@ void UninitMiniMap(void);
 void UpdateMiniMap(void);
 void DrawMiniMap(void);
 
+void SetMiniMap(int startX, int startY, int endX, int endY);
 
 #endif

@@ -246,7 +246,7 @@ void SetColorParticle(int no, D3DXCOLOR col)
 //=============================================================================
 void SetParticleLine(D3DXVECTOR3 pos, D3DXVECTOR3 vec, D3DXCOLOR col, float sizeX, float sizeY, int life)
 {
-	if (sizeX*sizeX * 0.125 < vec.x*vec.x + vec.y*vec.y || sizeY*sizeY * 0.125 < vec.x*vec.x + vec.y*vec.y)
+	if (sizeX*sizeX * 0.125f < vec.x*vec.x + vec.y*vec.y || sizeY*sizeY * 0.125f < vec.x*vec.x + vec.y*vec.y)
 	{
 		SetParticleLine(pos, vec / 2.0f, col, sizeX, sizeY, life - 1);
 		SetParticleLine(pos - vec / 2.0f, vec / 2.0f, col, sizeX, sizeY, life - 2);
