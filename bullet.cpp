@@ -273,8 +273,8 @@ void SetBullet(D3DXVECTOR3 pos, float rot, int type)
 				bullet->vec.y = sinf(rot) * BULLET_SPEED_PISTOL;
 				break;
 			case PLAYER_BULLET_SHOTGUN:
-				bullet->spin = true;
-				bullet->PatternAnim = 1;
+				bullet->spin = false;
+				bullet->PatternAnim = 0;
 				bullet->duration = BULLET_DURATION_SHOTGUN;
 				bullet->Radius = BULLET_SIZE_SHOTGUN;
 

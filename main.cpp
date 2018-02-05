@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "player.h"
 #include "enemy.h"
+#include "pointer.h"
 #include "bullet.h"
 #include "gun.h"
 #include "hand.h"
@@ -410,6 +411,9 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// エネミーの初期化処理
 	InitEnemy(0);
 
+	// ポインターの初期化処理
+	InitPointer(0);
+
 	// 宝箱の初期化処理
 	InitTreasure(0);
 
@@ -445,9 +449,15 @@ void Uninit(void)
 	UninitPlayer();
 	UninitGun();
 	UninitHand();
-	
+
 	// エネミーの終了処理
 	UninitEnemy();
+
+	// ポインターの終了処理
+	UninitPointer();
+
+	// ポインターの終了処理
+	UninitPointer();
 
 	// バレットの終了処理
 	UninitBullet();
@@ -541,6 +551,9 @@ void Update(void)
 		// エネミーの更新処理
 		UpdateEnemy();
 
+		// ポインターの更新処理
+		UpdatePointer();
+
 		// バレットの更新処理
 		UpdateBullet();
 
@@ -596,8 +609,9 @@ void Update(void)
 		InitGame();				// ゲームの再初期化処理
 		SetString("-ミッション-", SCREEN_CENTER_X, SCREEN_CENTER_Y - TEXTURE_FONT_SIZE * 2, TEXTURE_FONT_SIZE * 2, MESSAGE_INTERVAL);
 		SetString("かいだんを　さがせ", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE, TEXTURE_FONT_SIZE, MESSAGE_INTERVAL);
-		SetString("たいりょく", HEART_POS_X + TEXTURE_HEART_SIZE_X * MAX_HP / 1.9, HEART_POS_Y - TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE, -1);
+		SetString("たいりょく", HEART_POS_X + TEXTURE_HEART_SIZE_X * MAX_HP / 1.9f, HEART_POS_Y - TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE, -1);
 		//SetString("スコア", SCORE_POS_X + SCORE_DIGIT * TEXTURE_SCORE_SIZE_X / 2.0f, SCORE_POS_Y - TEXTURE_FONT_SIZE / 2.0f, TEXTURE_FONT_SIZE, -1);
+		//SetString("SELECTでサイズへんこう", MINIMAP_POS_X + MINIMAP_SIZE_SMALL * MAP_WIDTH, MINIMAP_POS_Y - TEXTURE_FONT_SIZE * 0.5f, TEXTURE_FONT_SIZE * 0.5, -1);
 		SetStage(STAGE_GAME);
 		break;
 
@@ -653,6 +667,9 @@ void Draw(void)
 
 			// エネミーの描画処理
 			DrawEnemy();
+
+			// ポインターの描画処理
+			DrawPointer();
 
 			// 宝箱の描画処理
 			DrawTreasure();
@@ -959,9 +976,13 @@ void CheckHit(void)
 	}
 
 	// 階段
-	if (GetRoom(GetExitRoomID())->clear && GetMapByPos(player->pos.x, player->pos.y) != MAP_EXIT)
+	if (GetMapByPos(player->pos.x, player->pos.y) == MAP_EXIT && GetFade() != FADE_B_OUT)
 	{
 		SetFade(FADE_B_OUT, STAGE_GAME_END);
+	}
+	else if (GetMapByPos(player->pos.x, player->pos.y) != MAP_EXIT && GetFade() == FADE_B_OUT)
+	{
+		SetFade(FADE_IN, STAGE_GAME);
 	}
 }
 
@@ -1020,6 +1041,7 @@ void InitGame(void)
 	InitFont(1);		// フォントの再初期化
 	InitDungeon(1);		// ダンジョンの再初期化
 	InitEnemy(1);		// エネミーの再初期化
+	InitPointer(1);		// ポインターの再初期化
 	InitTreasure(1);	// 宝箱の再初期化
 	InitDrop(1);		// ドロップの再初期化
 	InitParticle(1);	// パーティクルの再初期化

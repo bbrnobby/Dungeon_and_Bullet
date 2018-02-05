@@ -25,7 +25,7 @@ VERTEX_2D				g_vertexWkFade[NUM_VERTEX];	// 頂点情報格納ワーク
 
 D3DXCOLOR				g_color;
 FADE					g_eFade = FADE_IN;
-int						g_eState = STAGE_TITLE;		// 次に飛ぶ予定のステート
+E_STAGE					g_eState = STAGE_TITLE;		// 次に飛ぶ予定のステート
 
 //=============================================================================
 // 初期化処理

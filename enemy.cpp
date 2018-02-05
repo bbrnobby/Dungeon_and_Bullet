@@ -8,12 +8,30 @@
 #include "player.h"
 #include "bullet.h"
 #include "camera.h"
+#include "pointer.h"
 #include "particle.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define TEXTURE_GAME_ENEMY		_T("data/TEXTURE/enemy001.png")	// 画像
 
+#define ENEMY_TEXTURE_PATTERN_DIVIDE_X	(3)		// アニメパターンのテクスチャ内分割数（X)
+#define ENEMY_TEXTURE_PATTERN_DIVIDE_Y	(8)		// アニメパターンのテクスチャ内分割数（Y)
+#define ENEMY_ANIM_PATTERN_NUM			(ENEMY_TEXTURE_PATTERN_DIVIDE_X)	// アニメーションパターン数
+#define ENEMY_TIME_ANIMATION			(10)	// アニメーションの切り替わるカウント
+
+#define ENEMY_INTERVAL_WAIT				(30)	// 待機インターバル
+#define ENEMY_INTERVAL_DAMAGE			(30)	// ダメージインターバル
+#define ENEMY_INTERVAL_MOVE				(90)	// 移動インターバル
+#define ENEMY_INTERVAL_ATTACK			(90)	// 攻撃インターバル
+#define ENEMY_INTERVAL_FADE				(60)	// フェードインターバル
+#define ENEMY_INTERVAL_DEAD				(120)	// 死亡インターバル
+
+#define ENEMY_HP_001					(3)		// エネミー1の体力
+//#define ENEMY_SCORE_001					(100)	// エネミー1のスコア
+#define ENEMY_SPEED_001					(3.0f)	// エネミー1の速度
+#define ENEMY_FRICTION_001				(0.85f)	// エネミー1の慣性
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -23,6 +41,7 @@ void SetTextureEnemy( int no, int cntPattern );
 void SetVertexEnemy( int no );
 void SetDiffuseEnemy(int no);
 void MoveEnemy(ENEMY *enemy);
+void AttackEnemy(ENEMY *enemy);
 
 //*****************************************************************************
 // グローバル変数
@@ -37,7 +56,7 @@ ENEMY					enemyWk[ENEMY_MAX];				// エネミー構造体
 HRESULT InitEnemy(int type)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	ENEMY *enemy = enemyWk;					// エネミーのポインターを初期化
+	ENEMY *enemy = enemyWk;					// エネミーのポインタ
 
 	// テクスチャーの初期化を行う？
 	if (type == 0)
@@ -53,7 +72,7 @@ HRESULT InitEnemy(int type)
 	{
 		enemy->use = false;										// 使用
 		enemy->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);				// 座標データを初期化
-		enemy->subPosY = 0.0f;
+		enemy->subRot = 0.0f;
 		enemy->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);				// ベクトルデータを初期化
 		enemy->subVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);				// 回転データを初期化
@@ -95,12 +114,12 @@ void UninitEnemy(void)
 //=============================================================================
 void UpdateEnemy(void)
 {
-	ENEMY *enemy = enemyWk;		// エネミーのポインターを初期化
+	ENEMY *enemy = enemyWk;		// エネミーのポインタ
 	
 	for (int i = 0; i < ENEMY_MAX; i++, enemy++)
 	{
-		if (enemy->state != ENEMY_DEFAULT_STATE)	// 出現している状態なら更新する
-		{
+		if (enemy->state != ENEMY_DEFAULT_STATE)	
+		{	// 出現している状態なら更新する
 			if ((enemy->CountAnim % ENEMY_TIME_ANIMATION) == 0)
 			{
 				// パターンの切り替え
@@ -124,9 +143,9 @@ void UpdateEnemy(void)
 			case ENEMY_DAMAGE:
 			case ENEMY_WAIT:
 			case ENEMY_ATTACK:
-				enemy->vec *= ENEMY_FRICTION;
+				enemy->vec *= ENEMY_FRICTION_001;
 			case ENEMY_MOVE:
-				enemy->subVec *= ENEMY_FRICTION;
+				enemy->subVec *= ENEMY_FRICTION_001;
 			default:
 				// 座標の更新
 				if (GetMapByPos(enemy->pos.x + enemy->vec.x, enemy->pos.y) != MAP_ROOM)
@@ -157,12 +176,12 @@ void UpdateEnemy(void)
 				break;
 			}
 
-			enemy->subPosY = ((enemy->PatternAnim % 3 - 1) * 0.5f + enemy->subPosY * 3) / 4;
+			enemy->subRot = ((enemy->PatternAnim % 3 - 1) * 0.5f + enemy->subRot * 3) / 4;
 
 			enemy->rot.z = ((enemy->PatternAnim % 3 - 1) * 0.25f + enemy->rot.z * 30) / 31;
 
 			enemy->pos.x += enemy->vec.x + enemy->subVec.x;
-			enemy->pos.y += enemy->vec.y + enemy->subVec.y + enemy->subPosY;
+			enemy->pos.y += enemy->vec.y + enemy->subVec.y + enemy->subRot;
 
 			enemy->interval--;
 			if (enemy->interval <= 0)
@@ -192,15 +211,15 @@ void UpdateEnemy(void)
 void DrawEnemy(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	ENEMY *enemy = enemyWk;				// エネミーのポインターを初期化
+	ENEMY *enemy = enemyWk;			// エネミーのポインタ
 
 	// 頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
 
 	for (int i = 0; i < ENEMY_MAX; i++, enemy++)
 	{
-		if (enemy->state != ENEMY_DEFAULT_STATE)					// 使用している状態なら描画する
-		{
+		if (enemy->state != ENEMY_DEFAULT_STATE)		
+		{	// 出現している状態なら描画する
 			// テクスチャの設定
 			pDevice->SetTexture(0, enemy->Texture);
 
@@ -296,7 +315,7 @@ void SetDiffuseEnemy(int no)
 {
 	ENEMY *enemy = &enemyWk[no];
 
-	float fade;
+	int fade;
 
 	if (enemy->state < ENEMY_DEFAULT_STATE)
 	{
@@ -312,10 +331,10 @@ void SetDiffuseEnemy(int no)
 	}
 
 	// 反射光の設定
-	enemy->vertexWk[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)fade);
-	enemy->vertexWk[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)fade);
-	enemy->vertexWk[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)fade);
-	enemy->vertexWk[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)fade);
+	enemy->vertexWk[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, fade);
+	enemy->vertexWk[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, fade);
+	enemy->vertexWk[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, fade);
+	enemy->vertexWk[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, fade);
 }
 
 //=============================================================================
@@ -326,6 +345,9 @@ ENEMY *GetEnemy(int no)
 	return(&enemyWk[no]);
 }
 
+//=============================================================================
+// エネミー設定関数
+//=============================================================================
 void SetEnemy(int ID)
 {
 	ENEMY *enemy = enemyWk;
@@ -343,6 +365,9 @@ void SetEnemy(int ID)
 	}
 }
 
+//=============================================================================
+// エネミー出現関数
+//=============================================================================
 bool SpawnEnemy(float x, float y, int ID)
 {
 	ENEMY *enemy = enemyWk;
@@ -381,6 +406,7 @@ bool SpawnEnemy(float x, float y, int ID)
 
 			SetVertexEnemy(i);		// 移動後の座標で頂点を設定
 			SetDiffuseEnemy(i);
+			SetPointer(i);			// ポインターを設定
 			return true;			// 1体セットしたので終了する
 		}
 	}
@@ -388,7 +414,9 @@ bool SpawnEnemy(float x, float y, int ID)
 	return false;
 }
 
-
+//=============================================================================
+// エネミー消滅関数
+//=============================================================================
 void DeSpawnEnemy(int ID)
 {
 	ENEMY *enemy = enemyWk;
@@ -406,6 +434,9 @@ void DeSpawnEnemy(int ID)
 	return;
 }
 
+//=============================================================================
+// エネミー削除関数
+//=============================================================================
 void DeleteEnemy(ENEMY *enemy)
 {
 	ROOM *room = GetRoom(enemy->roomID);
@@ -439,6 +470,9 @@ void DeleteEnemy(ENEMY *enemy)
 	}
 }
 
+//=============================================================================
+// エネミー状態設定関数
+//=============================================================================
 void SetState(ENEMY *enemy, int state)
 {
 	if (enemy->use)
@@ -474,6 +508,9 @@ void SetState(ENEMY *enemy, int state)
 	}
 }
 
+//=============================================================================
+// エネミー移動関数
+//=============================================================================
 void MoveEnemy(ENEMY *enemy)
 {
 	float rotZ = D3DX_PI * 2 * (rand() % 360) / 360.0f;
@@ -484,6 +521,9 @@ void MoveEnemy(ENEMY *enemy)
 	enemy->dir = (int)(rotZ / D3DX_PI * 2 + 0.5) % 4;
 }
 
+//=============================================================================
+// エネミー反発関数
+//=============================================================================
 void KnockBackEnemy(ENEMY *enemy, float speed, float rotZ)
 {
 	enemy->vec.x = 0.0f;
@@ -500,8 +540,8 @@ void KnockBackEnemy(ENEMY *enemy, float speed, float rotZ)
 	//	enemy->subVec.y = speed * sinf(rotZ);
 	//}
 
-	enemy->subVec.x += speed * cosf(rotZ);
-	enemy->subVec.y += speed * sinf(rotZ);
+	enemy->subVec.x = speed * cosf(rotZ);
+	enemy->subVec.y = speed * sinf(rotZ);
 	
 	if (enemy->state != ENEMY_DAMAGE)
 	{
@@ -509,6 +549,9 @@ void KnockBackEnemy(ENEMY *enemy, float speed, float rotZ)
 	}
 }
 
+//=============================================================================
+// エネミー攻撃関数
+//=============================================================================
 void AttackEnemy(ENEMY *enemy)
 {
 	PLAYER *player = GetPlayer();

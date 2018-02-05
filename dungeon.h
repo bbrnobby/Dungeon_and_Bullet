@@ -12,9 +12,9 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MIN_ROOM_WIDTH				(10)	// 部屋の最小横サイズ
-#define MIN_ROOM_HEIGHT				(8)		// 部屋の最小縦サイズ
-#define MAX_ROOM_WIDTH				(18)	// 部屋の最大横サイズ
+#define MIN_ROOM_WIDTH				(12)	// 部屋の最小横サイズ
+#define MIN_ROOM_HEIGHT				(9)		// 部屋の最小縦サイズ
+#define MAX_ROOM_WIDTH				(20)	// 部屋の最大横サイズ
 #define MAX_ROOM_HEIGHT				(15)	// 部屋の最大縦サイズ
 #define MAP_WIDTH					(48)	// マップの横サイズ
 #define MAP_HEIGHT					(40)	// マップの縦サイズ

@@ -67,7 +67,7 @@ HRESULT InitPlayer(int type)
 	player->isMove = false;								
 	player->state = PLAYER_WALK;
 	player->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		
-	player->subPosY = 0.0f;								
+	player->subRot = 0.0f;								
 	player->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		
 	player->subVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		
 	player->hp = 0;					
@@ -332,10 +332,10 @@ void UpdatePlayer(void)
 		{
 		case PLAYER_WALK:
 		case PLAYER_LOCK:
-			player->subPosY = (-(player->PatternAnim % 2) * 3.0f + player->subPosY * 3) / 4;
+			player->subRot = (-(player->PatternAnim % 2) * 3.0f + player->subRot * 3) / 4;
 			break;
 		case PLAYER_RUN:
-			player->subPosY = (-(player->PatternAnim % 2) * 6.0f + player->subPosY * 3) / 4;
+			player->subRot = (-(player->PatternAnim % 2) * 6.0f + player->subRot * 3) / 4;
 			break;
 		}
 
@@ -442,22 +442,22 @@ void SetVertexPlayer(void)
 	
 	// ’¸“_À•W‚ÌÝ’è
 	player->vertexWk[0].vtx.x = (int)(posCamera->x - cosf(player->BaseAngle + player->rot.z) * player->Radius);
-	player->vertexWk[0].vtx.y = (int)(posCamera->y - sinf(player->BaseAngle + player->rot.z) * player->Radius + player->subPosY);
+	player->vertexWk[0].vtx.y = (int)(posCamera->y - sinf(player->BaseAngle + player->rot.z) * player->Radius + player->subRot);
 	player->vertexWk[0].vtx.z = 0.0f;
 	player->vertexWk[0].vtx	+= player->pos;
 
 	player->vertexWk[1].vtx.x = (int)(posCamera->x + cosf(player->BaseAngle - player->rot.z) * player->Radius);
-	player->vertexWk[1].vtx.y = (int)(posCamera->y - sinf(player->BaseAngle - player->rot.z) * player->Radius + player->subPosY);
+	player->vertexWk[1].vtx.y = (int)(posCamera->y - sinf(player->BaseAngle - player->rot.z) * player->Radius + player->subRot);
 	player->vertexWk[1].vtx.z = 0.0f;
 	player->vertexWk[1].vtx += player->pos;
 
 	player->vertexWk[2].vtx.x = (int)(posCamera->x - cosf(player->BaseAngle - player->rot.z) * player->Radius);
-	player->vertexWk[2].vtx.y = (int)(posCamera->y + sinf(player->BaseAngle - player->rot.z) * player->Radius + player->subPosY);
+	player->vertexWk[2].vtx.y = (int)(posCamera->y + sinf(player->BaseAngle - player->rot.z) * player->Radius + player->subRot);
 	player->vertexWk[2].vtx.z = 0.0f;
 	player->vertexWk[2].vtx += player->pos;
 
 	player->vertexWk[3].vtx.x = (int)(posCamera->x + cosf(player->BaseAngle + player->rot.z) * player->Radius);
-	player->vertexWk[3].vtx.y = (int)(posCamera->y + sinf(player->BaseAngle + player->rot.z) * player->Radius + player->subPosY);
+	player->vertexWk[3].vtx.y = (int)(posCamera->y + sinf(player->BaseAngle + player->rot.z) * player->Radius + player->subRot);
 	player->vertexWk[3].vtx.z = 0.0f;
 	player->vertexWk[3].vtx += player->pos;
 }
@@ -497,7 +497,7 @@ void SetPlayer(float x, float y)
 	player->pos.x = x;
 	player->pos.y = y;
 
-	player->subPosY = 0.0f;
+	player->subRot = 0.0f;
 	player->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	player->dir = DIR_RIGHT;
 	player->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);

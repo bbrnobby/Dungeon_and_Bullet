@@ -88,7 +88,6 @@ void UpdateFont(void)
 			else if (font->duration == 0)
 			{
 				font->use = false;
-				font->pos.x = -100.0f;
 			}
 			SetVertexFont(i);
 		}
@@ -183,7 +182,7 @@ void SetVertexFont(int no)
 	font->vertexWk[0].vtx.y = font->pos.y;
 	font->vertexWk[0].vtx.z = 0.0f;
 
-	font->vertexWk[1].vtx.x = font->pos.x + font->size;
+	font->vertexWk[1].vtx.x = font->pos.x + font->size * 0.75f;
 	font->vertexWk[1].vtx.y = font->pos.y;
 	font->vertexWk[1].vtx.z = 0.0f;
 
@@ -191,7 +190,7 @@ void SetVertexFont(int no)
 	font->vertexWk[2].vtx.y = font->pos.y + font->size;
 	font->vertexWk[2].vtx.z = 0.0f;
 
-	font->vertexWk[3].vtx.x = font->pos.x + font->size;
+	font->vertexWk[3].vtx.x = font->pos.x + font->size * 0.75f;
 	font->vertexWk[3].vtx.y = font->pos.y + font->size;
 	font->vertexWk[3].vtx.z = 0.0f;
 }
@@ -203,7 +202,7 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 
 	for (length = 0, buf = string; *buf != '\0'; length++, buf++)
 	{
-		if (*buf == -125 || *buf == -126 || *buf == -127) *buf++;
+		if (*buf == -125 || *buf == -126 || *buf == -127) buf++;
 	}
 
 	for (index = 0, buf = string; *buf != '\0'; index = 0, buf++)
@@ -247,10 +246,30 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 			// 「＋」
 			else if (*buf == 123)
 			{
-				index = 178;
+				index = 207;
 			}
 			// 「ー」・「―」・「－」
 			else if (*buf == 91 || *buf == 92 || *buf == 124)
+			{
+				index = 206;
+			}
+			// 「×」・「＊」
+			else if (*buf == 126 || *buf == -106)
+			{
+				index = 208;
+			}
+			// 「÷」・「／」
+			else if (*buf == -128 || *buf == 94)
+			{
+				index = 209;
+			}
+			// 「！」
+			else if (*buf == 73)
+			{
+				index = 178;
+			}
+			// 「？」
+			else if (*buf == 72)
 			{
 				index = 179;
 			}
@@ -278,10 +297,30 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 		// 「+」
 		else if (*buf == 43)
 		{
-			index = 178;
+			index = 207;
 		}
 		// 「-」
 		else if (*buf == 45)
+		{
+			index = 206;
+		}
+		// 「*」
+		else if (*buf == 42)
+		{
+			index = 208;
+		}
+		// 「/」
+		else if (*buf == 47)
+		{
+			index = 209;
+		}
+		// 「!」
+		else if (*buf == 33)
+		{
+			index = 178;
+		}
+		// 「?」
+		else if (*buf == 63)
 		{
 			index = 179;
 		}
@@ -294,8 +333,8 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 				if (!font->use)
 				{
 					font->use = true;
-					font->pos.x = posX + size * (-length / 2.0f);
-					font->pos.y = posY - size / 2.0f;
+					font->pos.x = posX + size * (-length * 0.5f)* 0.75f;
+					font->pos.y = posY - size * 0.5f;
 					font->size = size;
 					font->index = index;
 
@@ -307,7 +346,7 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 				}
 			}
 		}
-		posX += size;
+		posX += size * 0.75f;
 	}
 }
 
@@ -320,7 +359,7 @@ void RefreshFont(void)
 		if (font->use && font->duration > 0)
 		{
 			font->use = false;
-			font->pos.x = -100.0f;
+			font->pos.x = 0.0f;
 			font->pos.y = 0.0f;
 			font->size = TEXTURE_FONT_SIZE;
 			font->index = 0;

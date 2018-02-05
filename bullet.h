@@ -29,7 +29,7 @@
 #define BULLET_SPINSPEED				(0.3f)		// 弾の回転速度
 
 #define BULLET_DURATION_PISTOL			(120)		// バレットの持続時間
-#define BULLET_DURATION_SHOTGUN			(15)		// バレットの持続時間
+#define BULLET_DURATION_SHOTGUN			(20)		// バレットの持続時間
 #define BULLET_DURATION_ENEMY			(1000)		// エネミーのバレット持続時間
 
 enum type
@@ -42,7 +42,6 @@ enum type
 //*****************************************************************************
 // 構造体宣言
 //*****************************************************************************
-
 typedef struct	// バレット構造体
 {
 	bool			use;						// true:使用  false:未使用

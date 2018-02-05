@@ -13,7 +13,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_GAME_FONT		_T("data/TEXTURE/font001.png")	// サンプル用画像
-#define TEXTURE_FONT_SIZE		(64)	// テクスチャサイズ
+#define TEXTURE_FONT_SIZE				(64)	// テクスチャサイズ
 
 #define TEXTURE_PATTERN_FONT_DIVIDE_X	(35)	// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_FONT_DIVIDE_Y	(6)		// アニメパターンのテクスチャ内分割数（Y)
@@ -27,8 +27,8 @@ typedef struct	// フォント構造体
 {
 	bool			use;						// true:使用  false:未使用
 	D3DXVECTOR3		pos;						// 位置
-	int				size;
-	int				index;
+	int				size;						// 大きさ
+	int				index;						// 文字インデックス
 
 	int				duration;					// アニメーションカウント
 

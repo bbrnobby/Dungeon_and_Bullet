@@ -93,7 +93,7 @@ void UpdateMiniMap(void)
 		}
 	}
 
-	g_posMiniMap = D3DXVECTOR3(30, SCREEN_HEIGHT - g_scaleMiniMap * MAP_HEIGHT - 30, 0.0f);
+	g_posMiniMap = D3DXVECTOR3(MINIMAP_POS_X, MINIMAP_POS_Y - g_scaleMiniMap * MAP_HEIGHT, 0.0f);
 	SetVertexMiniMap();
 	SetDiffuseMiniMap();
 }
