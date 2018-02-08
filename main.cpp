@@ -63,6 +63,8 @@ void UpdateDebugFont(void);
 LPDIRECT3D9				g_pD3D = NULL;				// Direct3Dオブジェクト
 LPDIRECT3DDEVICE9		g_pD3DDevice = NULL;		// Deviceオブジェクト(描画に必要)
 
+D3DPRESENT_PARAMETERS	d3dpp;
+
 #ifdef _DEBUG
 bool					g_bDispDebug = true;		// デバッグ表示
 int						g_nCountFPS;				// FPSカウンタ
@@ -216,7 +218,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //=============================================================================
 HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 {
-	D3DPRESENT_PARAMETERS d3dpp;
 	D3DDISPLAYMODE d3ddm;
 
 	srand((unsigned)time(NULL));
@@ -234,30 +235,30 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 		return E_FAIL;
 	}
 
-	// デバイスのプレゼンテーションパラメータの設定
-	ZeroMemory(&d3dpp, sizeof(d3dpp));							// ワークをゼロクリア
-	d3dpp.BackBufferCount			= 1;						// バックバッファの数
-	d3dpp.BackBufferWidth			= SCREEN_WIDTH;				// ゲーム画面サイズ(幅)
-	d3dpp.BackBufferHeight			= SCREEN_HEIGHT;			// ゲーム画面サイズ(高さ)
-	d3dpp.BackBufferFormat			= D3DFMT_UNKNOWN;			// バックバッファのフォーマットは現在設定されているものを使う
-	d3dpp.SwapEffect				= D3DSWAPEFFECT_DISCARD;	// 映像信号に同期してフリップする
-	d3dpp.Windowed					= bWindow;					// ウィンドウモード
-	d3dpp.EnableAutoDepthStencil	= TRUE;						// デプスバッファ（Ｚバッファ）とステンシルバッファを作成
-	d3dpp.AutoDepthStencilFormat	= D3DFMT_D16;				// デプスバッファとして16bitを使う
-	d3dpp.BackBufferFormat			= d3ddm.Format;				// カラーモードの指定
+	//// デバイスのプレゼンテーションパラメータの設定
+	//ZeroMemory(&d3dpp, sizeof(d3dpp));							// ワークをゼロクリア
+	//d3dpp.BackBufferCount			= 1;						// バックバッファの数
+	//d3dpp.BackBufferWidth			= SCREEN_WIDTH;				// ゲーム画面サイズ(幅)
+	//d3dpp.BackBufferHeight			= SCREEN_HEIGHT;			// ゲーム画面サイズ(高さ)
+	//d3dpp.BackBufferFormat			= D3DFMT_UNKNOWN;			// バックバッファのフォーマットは現在設定されているものを使う
+	//d3dpp.SwapEffect				= D3DSWAPEFFECT_DISCARD;	// 映像信号に同期してフリップする
+	//d3dpp.Windowed					= bWindow;					// ウィンドウモード
+	//d3dpp.EnableAutoDepthStencil	= TRUE;						// デプスバッファ（Ｚバッファ）とステンシルバッファを作成
+	//d3dpp.AutoDepthStencilFormat	= D3DFMT_D16;				// デプスバッファとして16bitを使う
+	//d3dpp.BackBufferFormat			= d3ddm.Format;				// カラーモードの指定
 
-	if(bWindow)
-	{// ウィンドウモード
-		d3dpp.BackBufferFormat           = D3DFMT_UNKNOWN;					// バックバッファ
-		d3dpp.FullScreen_RefreshRateInHz = 0;								// リフレッシュレート
-		d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;	// インターバル
-	}
-	else
-	{// フルスクリーンモード
-		d3dpp.BackBufferFormat           = D3DFMT_R5G6B5;					// バックバッファ
-		d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;			// リフレッシュレート
-		d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;		// インターバル
-	}
+	//if(bWindow)
+	//{// ウィンドウモード
+	//	d3dpp.BackBufferFormat           = D3DFMT_UNKNOWN;					// バックバッファ
+	//	d3dpp.FullScreen_RefreshRateInHz = 0;								// リフレッシュレート
+	//	d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;	// インターバル
+	//}
+	//else
+	//{// フルスクリーンモード
+	//	d3dpp.BackBufferFormat           = D3DFMT_R5G6B5;					// バックバッファ
+	//	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;			// リフレッシュレート
+	//	d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;		// インターバル
+	//}
 
 	//// デバイスの生成
 	//// ディスプレイアダプタを表すためのデバイスを作成
@@ -292,16 +293,17 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	//		}
 	//	}
 	//}
+
 	// デバイスのプレゼンテーションパラメータの設定
-	ZeroMemory(&d3dpp, sizeof(d3dpp));							// ワークをゼロクリア
+	ZeroMemory(&d3dpp, sizeof(d3dpp));				// ワークをゼロクリア
 	d3dpp.BackBufferCount = 1;						// バックバッファの数
-	d3dpp.BackBufferWidth = SCREEN_WIDTH;				// ゲーム画面サイズ(幅)
+	d3dpp.BackBufferWidth = SCREEN_WIDTH;			// ゲーム画面サイズ(幅)
 	d3dpp.BackBufferHeight = SCREEN_HEIGHT;			// ゲーム画面サイズ(高さ)
-	d3dpp.BackBufferFormat = d3ddm.Format;				// バックバッファフォーマットはディスプレイモードに合わせて使う
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;	// 映像信号に同期してフリップする
-	d3dpp.Windowed = bWindow;					// ウィンドウモード
-	d3dpp.EnableAutoDepthStencil = TRUE;						// デプスバッファ（Ｚバッファ）とステンシルバッファを作成
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;				// デプスバッファとして16bitを使う
+	d3dpp.BackBufferFormat = d3ddm.Format;			// バックバッファフォーマットはディスプレイモードに合わせて使う
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;		// 映像信号に同期してフリップする
+	d3dpp.Windowed = bWindow;						// ウィンドウモード
+	d3dpp.EnableAutoDepthStencil = TRUE;			// デプスバッファ（Ｚバッファ）とステンシルバッファを作成
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;		// デプスバッファとして16bitを使う
 
 	if (bWindow)
 	{// ウィンドウモード
@@ -740,7 +742,38 @@ void Draw(void)
 	}
 
 	// バックバッファとフロントバッファの入れ替え
-	g_pD3DDevice->Present(NULL, NULL, NULL, NULL);
+	if (g_pD3DDevice->Present(NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST)
+	{
+		if (g_pD3DDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+		{
+#ifdef _DEBUG
+			GetProc()->OnLostDevice();
+#endif
+			g_pD3DDevice->Reset(&d3dpp);
+
+			// レンダリングステートパラメータの設定
+			g_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);				// カリングを行わない
+			g_pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);						// Zバッファを使用
+			g_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);				// αブレンドを行う
+			g_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);		// αソースカラーの指定
+			g_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);	// αデスティネーションカラーの指定
+
+																					// サンプラーステートパラメータの設定
+			g_pD3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);	// テクスチャＵ値の繰り返し設定
+			g_pD3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);	// テクスチャＶ値の繰り返し設定
+			g_pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);	// テクスチャ拡大時の補間設定
+			g_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// テクスチャ縮小時の補間設定
+
+																					// テクスチャステージ加算合成処理
+			g_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);	// アルファブレンディング処理
+			g_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);	// 最初のアルファ引数
+			g_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);	// ２番目のアルファ引数
+
+#ifdef _DEBUG
+			GetProc()->OnResetDevice();
+#endif
+		}
+	}
 }
 
 //=============================================================================

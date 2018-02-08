@@ -18,5 +18,6 @@ void UpdateDebugProc(void);
 void DrawDebugProc(void);
 
 void PrintDebugProc(char *fmt,...);
+LPD3DXFONT GetProc(void);
 
 #endif

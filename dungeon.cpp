@@ -151,14 +151,14 @@ HRESULT MakeVertexDungeon(void)
 			g_vertexWkDungeon[MAP_HEIGHT * i + j][3].rhw = 1.0f;
 
 			// îΩéÀåıÇÃê›íË
-			if (g_map[i][j] == MAP_PATH || g_map[i][j] == MAP_TRAIL)
-			{
-				g_vertexWkDungeon[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
-				g_vertexWkDungeon[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
-				g_vertexWkDungeon[MAP_HEIGHT * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
-				g_vertexWkDungeon[MAP_HEIGHT * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
-			}
-			else
+			//if (g_map[i][j] == MAP_PATH || g_map[i][j] == MAP_TRAIL)
+			//{
+			//	g_vertexWkDungeon[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+			//	g_vertexWkDungeon[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+			//	g_vertexWkDungeon[MAP_HEIGHT * i + j][2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+			//	g_vertexWkDungeon[MAP_HEIGHT * i + j][3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 128);
+			//}
+			//else
 			{
 				g_vertexWkDungeon[MAP_HEIGHT * i + j][0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
 				g_vertexWkDungeon[MAP_HEIGHT * i + j][1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);

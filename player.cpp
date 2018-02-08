@@ -185,13 +185,14 @@ void UpdatePlayer(void)
 			}
 
 			// 射線固定
-			if (GetKeyboardPress(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_Y) || IsButtonPressed(0, BUTTON_Z))
-			{
+			if ((GetMapByPos(player->pos.x, player->pos.y) == MAP_ROOM)
+			 &&(GetKeyboardPress(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_Y) || IsButtonPressed(0, BUTTON_Z)))
+			{				
 				if (player->state == PLAYER_WALK)
 				{	// 歩き状態の時、構えモーションに変化
 					player->state = PLAYER_LOCK;
 					SetTexturePlayer(player->PatternAnim + (player->dir + player->state * 4) * PLAYER_ANIM_PATTERN_NUM);
-				}
+				}	
 			}
 			else if (player->state == PLAYER_LOCK)
 			{	// 離した時に射線固定を解除し、モーションを通常に戻す
@@ -202,7 +203,13 @@ void UpdatePlayer(void)
 			}
 
 			// 走る
-			if (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B) || GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL) {
+			if (GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
+			{
+				SetString("TIPS　ー　つうろでは　Bボタンで　はしれる", SCREEN_CENTER_X, SCREEN_HEIGHT - TEXTURE_FONT_SIZE / 2, TEXTURE_FONT_SIZE, 1);
+			}
+
+			if ((GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
+				&& (GetKeyboardPress(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_B))) {
 				if (player->state == PLAYER_WALK)
 				{	// 歩き状態の時、走りモーションに変化
 					player->state = PLAYER_RUN;
@@ -276,14 +283,7 @@ void UpdatePlayer(void)
 				player->vec = player->vec / 4 * 3;
 				break;
 			case PLAYER_RUN:
-				if (GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
-				{
-					player->vec = player->vec * 2;
-				}
-				else
-				{
-					player->vec = player->vec / 2 * 3;
-				}
+				player->vec = player->vec * 2;
 				break;
 			}
 
