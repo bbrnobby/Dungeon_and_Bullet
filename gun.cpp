@@ -10,6 +10,7 @@
 #include "player.h"
 #include "camera.h"
 #include "debugproc.h"
+#include "input.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -33,8 +34,10 @@
 #define POS_UI_GUN_Y		(SCREEN_HEIGHT - 30 - (TEXTURE_UI_GUN_SIZE + TEXTURE_UI_WIN_SIZE) / 2)	// 銃(UI)のY座標
 #define POS_UI_WINDOW_X		(SCREEN_WIDTH - 30 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのX座標
 #define POS_UI_WINDOW_Y		(SCREEN_HEIGHT - 30 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのY座標
-#define POS_UI_BULLET_X		(SCREEN_WIDTH - 45 - TEXTURE_UI_BULLET_SIZE_X)		// 銃弾(UI)のX座標
+#define POS_UI_BULLET_X		(POS_UI_WINDOW_X - TEXTURE_UI_BULLET_SIZE_X)		// 銃弾(UI)のX座標
 #define POS_UI_BULLET_Y		(SCREEN_HEIGHT - 45 - TEXTURE_UI_BULLET_SIZE_Y)		// 銃弾(UI)のY座標
+
+#define SPEED_UI_BULLET		(10)			// 銃弾(UI)のスピード
 
 const char *TEXTURE_GAME_GUN[] =	// 銃のテクスチャ(ゲーム部分)
 {
@@ -47,10 +50,7 @@ const char *TEXTURE_GAME_GUN[] =	// 銃のテクスチャ(ゲーム部分)
 //*****************************************************************************
 HRESULT MakeVertexGun(void);
 void SetTextureGun(void);
-void SetVertexGun(int dir);
-
-void SetTextureGunUI(void);
-void SetVertexGunUI(void);
+void SetVertexGun(void);
 
 //*****************************************************************************
 // グローバル変数
@@ -123,7 +123,6 @@ HRESULT InitGun(int type)
 	uiGun->count = -1;
 	uiGun->Texture = g_pD3DTextureUIGun;
 	
-
 	// ウィンドウ(UI)の初期化処理
 	uiWin->pos = D3DXVECTOR3(POS_UI_WINDOW_X, POS_UI_WINDOW_Y, 0.0f);
 	uiWin->Texture = g_pD3DTextureUIWindow;
@@ -133,8 +132,8 @@ HRESULT InitGun(int type)
 	{
 		uiBullet->use = false;
 		uiBullet->pos = D3DXVECTOR3(POS_UI_BULLET_X, POS_UI_BULLET_Y, 0.0f);
-		uiBullet->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		uiBullet->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		uiBullet->move = false;
 		uiBullet->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		uiBullet->vecRot = 0.0f;
 
@@ -213,13 +212,20 @@ void UpdateGun(void)
 	}
 
 	// 使用している状態なら更新する
-	if (gun->use)					
+	if (gun->use)
 	{
 		// 射線非固定時
 		if (player->state != PLAYER_LOCK)
 		{
 			gun->isLocked = false;	// 銃を非固定に
 			gun->subRot = 0.0f;		// 斜めの回転をリセット
+
+			// 銃の切り替え
+			if (GetKeyboardTrigger(DIK_E) || IsButtonTriggered(0, BUTTON_C))
+			{
+				player->gunType = (player->gunType + 1) % GUN_MAX;
+				SetGun(player->gunType);
+			}
 		}
 
 		// 銃非固定時
@@ -383,6 +389,7 @@ void UpdateGun(void)
 				break;
 			}
 		}
+
 		// 回転の更新
 		gun->dirRot = (player->dir * D3DX_PI / 2 + gun->subRot + gun->dirRot * 5) / 6;
 		gun->rot.z = player->rot.z * 2 + gun->dirRot;
@@ -391,20 +398,42 @@ void UpdateGun(void)
 		gun->pos.x = (gun->subPos.x + gun->pos.x * 2) / 3;
 		gun->pos.y = (gun->subPos.y + player->subRot + gun->pos.y * 2) / 3;
 
-		SetVertexGun(player->dir);	// 移動後の座標で頂点を設定
+		SetVertexGun();	// 移動後の座標で頂点を設定
+
+		// 位置の更新
+		if (TEXTURE_UI_GUN_SIZE * uiGun->count - uiGun->subPosX < 0.1f && uiGun->count % GUN_MAX == 0)
+		{
+			uiGun->subPosX = 0.0f;
+			uiGun->count = 0;
+		}
+		else
+		{
+			uiGun->subPosX = (uiGun->subPosX * 3 + uiGun->count * TEXTURE_UI_GUN_SIZE) / 4;
+		}
+
+		for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+		{
+			if (uiBullet->move)
+			{
+				uiBullet->vec.y += 1.0f;
+				uiBullet->vec.x *= 0.9f;
+				uiBullet->pos += uiBullet->vec;
+				uiBullet->rot.z += uiBullet->vecRot;
+
+				if (uiBullet->pos.y > SCREEN_HEIGHT)
+				{
+					uiBullet->use = false;
+				}
+			}
+		}
+
+#ifdef _DEBUG
+		PrintDebugProc("count:%d\n", uiGun->count);
+		PrintDebugProc("type:%d\n", gun->type);
+#endif
+
+		SetTextureGun();
 	}
-	// 位置の更新
-	if (TEXTURE_UI_GUN_SIZE * uiGun->count - uiGun->subPosX < 0.1f && uiGun->count % GUN_MAX == 0)
-	{
-		uiGun->subPosX = 0.0f;
-		uiGun->count = 0;
-	}
-	else
-	{
-		uiGun->subPosX = (uiGun->subPosX * 3 + uiGun->count * TEXTURE_UI_GUN_SIZE) / 4;
-	}
-	PrintDebugProc("count:%d\n", uiGun->count);
-	SetTextureGunUI();
 }
 
 //=============================================================================
@@ -471,8 +500,7 @@ HRESULT MakeVertexGun(void)
 	UI_BULLET *uiBullet = uiBulletWk;
 
 	// 頂点座標の設定
-	SetVertexGun(GetPlayer()->dir);
-	SetVertexGunUI();
+	SetVertexGun();
 
 	// rhwの設定
 	gun->vertexWk[0].rhw =
@@ -527,7 +555,6 @@ HRESULT MakeVertexGun(void)
 
 	// テクスチャ座標の設定
 	SetTextureGun();
-	SetTextureGunUI();
 
 	return S_OK;
 }
@@ -538,19 +565,15 @@ HRESULT MakeVertexGun(void)
 void SetTextureGun(void)
 {
 	GUN *gun = &gunWk;
+	UI_GUN *uiGun = &uiGunWk;
+	UI_WINDOW *uiWin = &uiWinWk;
+	UI_BULLET *uiBullet = uiBulletWk;
 
 	// テクスチャ座標の設定
 	gun->vertexWk[0].tex = D3DXVECTOR2( 0.0f, 0.0f);
 	gun->vertexWk[1].tex = D3DXVECTOR2( 1.0f, 0.0f);
 	gun->vertexWk[2].tex = D3DXVECTOR2( 0.0f, 1.0f);
 	gun->vertexWk[3].tex = D3DXVECTOR2( 1.0f, 1.0f);
-}
-
-void SetTextureGunUI(void)
-{
-	UI_GUN *uiGun = &uiGunWk;
-	UI_WINDOW *uiWin = &uiWinWk;
-	UI_BULLET *uiBullet = uiBulletWk;
 
 	// テクスチャ座標の設定
 	float startX = uiGun->subPosX / TEXTURE_UI_GUN_SIZE / GUN_MAX;
@@ -568,25 +591,28 @@ void SetTextureGunUI(void)
 
 	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
 	{
-		float sizeX = 1.0f / GUN_MAX;
+		startX = (float)gun->type / GUN_MAX;
 
-		uiBullet->vertexWk[0].tex = D3DXVECTOR2(uiBullet->type, 0.0f);
-		uiBullet->vertexWk[1].tex = D3DXVECTOR2(uiBullet->type + sizeX, 0.0f);
-		uiBullet->vertexWk[2].tex = D3DXVECTOR2(uiBullet->type, 1.0f);
-		uiBullet->vertexWk[3].tex = D3DXVECTOR2(uiBullet->type + sizeX, 1.0f);
+		uiBullet->vertexWk[0].tex = D3DXVECTOR2(startX, 0.0f);
+		uiBullet->vertexWk[1].tex = D3DXVECTOR2(startX + sizeX, 0.0f);
+		uiBullet->vertexWk[2].tex = D3DXVECTOR2(startX, 1.0f);
+		uiBullet->vertexWk[3].tex = D3DXVECTOR2(startX + sizeX, 1.0f);
 	}
 }
 //=============================================================================
 // 頂点座標の設定
 //=============================================================================
-void SetVertexGun(int dir)
+void SetVertexGun(void)
 {
 	GUN *gun = &gunWk;
+	UI_GUN *uiGun = &uiGunWk;
+	UI_WINDOW *uiWin = &uiWinWk;
+	UI_BULLET *uiBullet = uiBulletWk;
 	PLAYER *player = GetPlayer();
 	D3DXVECTOR3 *posCamera = GetCameraPos();
 
 	// 頂点座標の設定
-	if (dir == DIR_LEFT)
+	if (player->dir == DIR_LEFT)
 	{
 		gun->vertexWk[0].vtx.x = gun->pos.x + posCamera->x - cosf(gun->BaseAngle - gun->rot.z) * gun->Radius;
 		gun->vertexWk[0].vtx.y = gun->pos.y + posCamera->y + sinf(gun->BaseAngle - gun->rot.z) * gun->Radius;
@@ -627,13 +653,6 @@ void SetVertexGun(int dir)
 	gun->vertexWk[1].vtx += player->pos;
 	gun->vertexWk[2].vtx += player->pos;
 	gun->vertexWk[3].vtx += player->pos;
-}
-
-void SetVertexGunUI(void)
-{
-	UI_GUN *uiGun = &uiGunWk;
-	UI_WINDOW *uiWin = &uiWinWk;
-	UI_BULLET *uiBullet = uiBulletWk;
 
 	// 頂点座標の設定
 	uiGun->vertexWk[0].vtx.x = uiGun->pos.x;
@@ -706,6 +725,7 @@ void SetGun(int no)
 {
 	GUN *gun = &gunWk;
 	UI_GUN *uiGun = &uiGunWk;
+	UI_BULLET *uiBullet = uiBulletWk;
 	PLAYER *player = GetPlayer();
 
 	// 銃の設定
@@ -717,7 +737,6 @@ void SetGun(int no)
 
 		gun->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		switch (player->dir)
-
 		{
 		case DIR_RIGHT:	// 右
 			if (gun->isLocked)
@@ -846,10 +865,41 @@ void SetGun(int no)
 			break;
 		}
 
+		int mag;
+		switch (no)
+		{
+		case GUN_PISTOL:
+			mag = MAG_PISTOL;
+			break;
+		case GUN_SHOTGUN:
+			mag = MAG_SHOTGUN;
+			break;
+		}
+
+		for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+		{
+			if (i < mag)
+			{
+				uiBullet->use = true;
+				uiBullet->move = false;
+				uiBullet->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				uiBullet->vecRot = 0.0f;
+				uiBullet->pos.x = POS_UI_BULLET_X - (TEXTURE_UI_BULLET_SIZE_X * (1 + no * 0.5)) * (mag - i);
+				uiBullet->pos.y = POS_UI_BULLET_Y;
+				uiBullet->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				uiBullet->use = false;
+			}
+		}
+
+
 		uiGun->count++;
 
 		MakeVertexGun();
 		gun->Texture = g_pD3DTextureGun[no];	// テクスチャ情報を更新
+
 	}
 }
 
@@ -860,6 +910,7 @@ void SetShot()
 {
 	GUN *gun = &gunWk;
 	PLAYER *player = GetPlayer();
+	UI_BULLET *uiBullet = uiBulletWk;
 
 	D3DXVECTOR3 pos = player->pos;
 
@@ -879,5 +930,17 @@ void SetShot()
 			SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
 		}
 		break;
+	}
+
+	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+	{
+		if (!uiBullet->move)
+		{
+			uiBullet->vec.x = rand() % (SPEED_UI_BULLET * 2 + 1) - SPEED_UI_BULLET;
+			uiBullet->vec.y = -(rand() % SPEED_UI_BULLET / 2) - SPEED_UI_BULLET;
+			uiBullet->vecRot = D3DX_PI / (rand() % SPEED_UI_BULLET + 3) * ((rand() % 2 - 0.5) * 2);
+			uiBullet->move = true;
+			break;
+		}
 	}
 }

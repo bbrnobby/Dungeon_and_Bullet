@@ -70,6 +70,13 @@ void UninitMiniMap(void)
 //=============================================================================
 void UpdateMiniMap(void)
 {
+#ifdef _DEBUG
+	if (GetKeyboardTrigger(DIK_F2))
+	{
+		SetMiniMap(0, 0, MAP_WIDTH - 1, MAP_HEIGHT - 1);
+	}
+#endif
+
 	if (GetKeyboardTrigger(DIK_M) || IsButtonTriggered(0, BUTTON_L))
 	{
 		if (g_scaleMiniMap == MINIMAP_SIZE_SMALL)
@@ -81,6 +88,7 @@ void UpdateMiniMap(void)
 			g_scaleMiniMapTo = MINIMAP_SIZE_SMALL;
 		}
 	}
+
 	if (g_scaleMiniMap != g_scaleMiniMapTo)
 	{
 		if (fabs(g_scaleMiniMap - g_scaleMiniMapTo) < 0.1)

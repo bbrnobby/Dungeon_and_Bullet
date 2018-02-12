@@ -62,10 +62,9 @@ typedef struct	// 銃ウィンドウ(UI)構造体
 typedef struct	// 銃弾(UI)構造体
 {
 	bool			use;						// true:使用  false:未使用
-	int				type;						// 銃の種類
 	D3DXVECTOR3		pos;						// 位置
-	D3DXVECTOR3		subPos;						// 位置調整
 	D3DXVECTOR3		vec;						// 移動ベクトル
+	bool			move;						// 移動フラグ
 	D3DXVECTOR3		rot;						// 回転量
 	float			vecRot;						// 回転速度
 

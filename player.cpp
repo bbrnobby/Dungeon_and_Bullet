@@ -203,13 +203,11 @@ void UpdatePlayer(void)
 			}
 
 			// 走る
-			if (GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
-			{
-				SetString("TIPS　ー　つうろでは　Bボタンで　はしれる", SCREEN_CENTER_X, SCREEN_HEIGHT - TEXTURE_FONT_SIZE / 2, TEXTURE_FONT_SIZE, 1);
-			}
-
-			if ((GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH || GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL)
-				&& (GetKeyboardPress(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_B))) {
+			if ((GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH
+				|| GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL
+				|| (GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))
+					&& GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))->clear))
+				&& (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B))) {
 				if (player->state == PLAYER_WALK)
 				{	// 歩き状態の時、走りモーションに変化
 					player->state = PLAYER_RUN;
@@ -223,14 +221,6 @@ void UpdatePlayer(void)
 				player->rot.z = 0.0f;
 				player->PatternAnim = 1;
 				SetTexturePlayer(player->PatternAnim + player->dir * PLAYER_ANIM_PATTERN_NUM);
-			}
-
-			// 銃の切り替え
-			if (GetKeyboardTrigger(DIK_E) || IsButtonTriggered(0, BUTTON_C))
-			{
-				player->gunType = (player->gunType + 1) % GUN_MAX;
-				SetGun(player->gunType);
-				SetTexturePlayer((player->PatternAnim + 1) % PLAYER_ANIM_PATTERN_NUM + (player->dir + player->state * 4) * PLAYER_ANIM_PATTERN_NUM);
 			}
 
 			// 弾発射
