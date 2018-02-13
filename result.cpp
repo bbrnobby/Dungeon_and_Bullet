@@ -10,6 +10,23 @@
 #include "fade.h"
 
 //*****************************************************************************
+// マクロ定義
+//*****************************************************************************
+#define	TEXTURE_RESULT			_T("data/TEXTURE/TITLE/title_bg_mono.png")	// 読み込むテクスチャファイル名
+#define	TEXTURE_RESULT_LOGO		_T("data/TEXTURE/result_logo.png")			// 読み込むテクスチャファイル名
+#define TEXTURE_RESULT_IMAGE	_T("data/TEXTURE/kaizoku_takara.png")		// 読み込むテクスチャファイル名
+
+#define	RESULTLOGO_POS_X		(SCREEN_CENTER_X - 240)	// リザルトロゴの表示位置
+#define	RESULTLOGO_POS_Y		(120)					// リザルトロゴの表示位置
+#define	RESULTLOGO_SIZE_X		(480)					// リザルトロゴの幅
+#define	RESULTLOGO_SIZE_Y		(80)					// リザルトロゴの高さ
+
+#define	RESULTIMAGE_POS_X		(SCREEN_CENTER_X - 160)	// リザルト画像の表示位置
+#define	RESULTIMAGE_POS_Y		(SCREEN_HEIGHT - 480)	// リザルト画像の表示位置
+#define	RESULTIMAGE_SIZE_X		(320)					// リザルト画像の幅
+#define	RESULTIMAGE_SIZE_Y		(320)					// リザルト画像の高さ
+
+//*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT MakeVertexResult(void);
@@ -121,10 +138,10 @@ void DrawResult(void)
 HRESULT MakeVertexResult(void)
 {	
 	// 頂点座標の設定
-	g_vertexWkResult[0].vtx = D3DXVECTOR3(RESULT_POS_X, RESULT_POS_Y, 0.0f);
-	g_vertexWkResult[1].vtx = D3DXVECTOR3(RESULT_POS_X + RESULT_SIZE_X, RESULT_POS_Y, 0.0f);
-	g_vertexWkResult[2].vtx = D3DXVECTOR3(RESULT_POS_X, RESULT_POS_Y + RESULT_SIZE_Y, 0.0f);
-	g_vertexWkResult[3].vtx = D3DXVECTOR3(RESULT_POS_X + RESULT_SIZE_X, RESULT_POS_Y + RESULT_SIZE_Y, 0.0f);
+	g_vertexWkResult[0].vtx = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_vertexWkResult[1].vtx = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+	g_vertexWkResult[2].vtx = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+	g_vertexWkResult[3].vtx = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 	// テクスチャのパースペクティブコレクト用
 	g_vertexWkResult[0].rhw =
@@ -133,10 +150,10 @@ HRESULT MakeVertexResult(void)
 	g_vertexWkResult[3].rhw = 1.0f;
 
 	// 反射光の設定
-	g_vertexWkResult[0].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResult[1].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResult[2].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResult[3].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
+	g_vertexWkResult[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResult[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResult[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResult[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
 
 	// テクスチャ座標の設定
 	g_vertexWkResult[0].tex = D3DXVECTOR2(0.0f, 0.0f);
@@ -181,10 +198,10 @@ HRESULT MakeVertexResult(void)
 	g_vertexWkResultImage[3].rhw = 1.0f;
 
 	// 反射光の設定
-	g_vertexWkResultImage[0].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResultImage[1].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResultImage[2].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
-	g_vertexWkResultImage[3].diffuse = D3DCOLOR_RGBA(200, 200, 200, 255);
+	g_vertexWkResultImage[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResultImage[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResultImage[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResultImage[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
 
 	// テクスチャ座標の設定
 	g_vertexWkResultImage[0].tex = D3DXVECTOR2(0.0f, 0.0f);

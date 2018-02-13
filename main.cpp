@@ -597,7 +597,6 @@ void Update(void)
 		break;
 
 	case STAGE_GAME_END:
-		SetResultScoreArea(RESULTSCORE_POS_X, RESULTSCORE_POS_Y, RESULTSCORE_SIZE_X, RESULTSCORE_SIZE_Y);
 		SetStage(STAGE_RESULT);
 		break;
 	

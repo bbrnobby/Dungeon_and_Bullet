@@ -10,7 +10,14 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define TEXTURE_RESULT_SCORE	_T("data/TEXTURE/number16x32.png")	// サンプル用画像
+#define TEXTURE_RESULT_SCORE_SIZE_X	(16)	// テクスチャサイズ
+#define TEXTURE_RESULT_SCORE_SIZE_Y	(32)	// 同上
 
+#define RESULTSCORE_POS_X		(SCREEN_CENTER_X - 160)	// リザルトスコアの表示位置
+#define RESULTSCORE_POS_Y		(SCREEN_CENTER_Y - 64)	// リザルトスコアの表示位置
+#define RESULTSCORE_SIZE_X		(64)					// リザルトスコアの文字横サイズ
+#define RESULTSCORE_SIZE_Y		(128)					// リザルトスコアの文字縦サイズ
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -43,10 +50,10 @@ HRESULT InitResultScore(int type)
 		// テクスチャの読み込み
 		D3DXCreateTextureFromFile(pDevice,		// デバイスのポインタ
 			TEXTURE_RESULT_SCORE,				// ファイルの名前
-			&g_pD3DTextureResultScore);				// 読み込むメモリのポインタ
+			&g_pD3DTextureResultScore);			// 読み込むメモリのポインタ
 	}
 
-	SetScoreArea(SCORE_POS_X, SCORE_POS_Y, SCORE_SIZE_X, SCORE_SIZE_Y);
+	SetResultScoreArea(RESULTSCORE_POS_X, RESULTSCORE_POS_Y, RESULTSCORE_SIZE_X, RESULTSCORE_SIZE_Y);
 	g_nResultScore = 0;
 
 	// 頂点情報の作成

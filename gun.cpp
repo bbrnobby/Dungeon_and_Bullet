@@ -59,6 +59,7 @@ LPDIRECT3DTEXTURE9		g_pD3DTextureGun[GUN_MAX] = {};		// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIGun;					// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIBullet;				// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIWindow;				// テクスチャへのポリゴン
+VERTEX_2D				g_vertexWkOverlay[NUM_VERTEX];	// 頂点情報格納ワーク
 
 GUN						gunWk;								// 銃構造体
 UI_GUN					uiGunWk;							// 銃(UI)構造体
@@ -470,6 +471,12 @@ void DrawGun(void)
 	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, uiGun->vertexWk, sizeof(VERTEX_2D));
 
 	// テクスチャの設定
+	pDevice->SetTexture(0, NULL);
+
+	// ポリゴンの描画
+	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkOverlay, sizeof(VERTEX_2D));
+
+	// テクスチャの設定
 	pDevice->SetTexture(0, uiWin->Texture);
 
 	// ポリゴンの描画
@@ -552,6 +559,18 @@ HRESULT MakeVertexGun(void)
 		uiBullet->vertexWk[2].rhw =
 		uiBullet->vertexWk[3].rhw = 1.0f;
 	}
+
+	// rhwの設定
+	g_vertexWkOverlay[0].rhw =
+	g_vertexWkOverlay[1].rhw =
+	g_vertexWkOverlay[2].rhw =
+	g_vertexWkOverlay[3].rhw = 1.0f;
+
+	// 反射光の設定
+	g_vertexWkOverlay[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 100);
+	g_vertexWkOverlay[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 100);
+	g_vertexWkOverlay[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 100);
+	g_vertexWkOverlay[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 100);
 
 	// テクスチャ座標の設定
 	SetTextureGun();
@@ -707,6 +726,23 @@ void SetVertexGun(void)
 		uiBullet->vertexWk[3].vtx.y = uiBullet->pos.y + sinf(uiBullet->BaseAngle + uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[3].vtx.z = 0.0f;
 	}
+
+	// 頂点座標の設定
+	g_vertexWkOverlay[0].vtx.x = uiGun->pos.x;
+	g_vertexWkOverlay[0].vtx.y = uiGun->pos.y;
+	g_vertexWkOverlay[0].vtx.z = 0.0f;
+
+	g_vertexWkOverlay[1].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
+	g_vertexWkOverlay[1].vtx.y = uiGun->pos.y;
+	g_vertexWkOverlay[1].vtx.z = 0.0f;
+
+	g_vertexWkOverlay[2].vtx.x = uiGun->pos.x;
+	g_vertexWkOverlay[2].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
+	g_vertexWkOverlay[2].vtx.z = 0.0f;
+
+	g_vertexWkOverlay[3].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
+	g_vertexWkOverlay[3].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
+	g_vertexWkOverlay[3].vtx.z = 0.0f;
 }
 
 //=============================================================================
@@ -865,26 +901,25 @@ void SetGun(int no)
 			break;
 		}
 
-		int mag;
 		switch (no)
 		{
 		case GUN_PISTOL:
-			mag = MAG_PISTOL;
+			gun->ammo = MAG_PISTOL;
 			break;
 		case GUN_SHOTGUN:
-			mag = MAG_SHOTGUN;
+			gun->ammo = MAG_SHOTGUN;
 			break;
 		}
 
 		for (int i = 0; i < MAG_MAX; i++, uiBullet++)
 		{
-			if (i < mag)
+			if (i < gun->ammo)
 			{
 				uiBullet->use = true;
 				uiBullet->move = false;
 				uiBullet->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 				uiBullet->vecRot = 0.0f;
-				uiBullet->pos.x = POS_UI_BULLET_X - (TEXTURE_UI_BULLET_SIZE_X * (1 + no * 0.5)) * (mag - i);
+				uiBullet->pos.x = POS_UI_BULLET_X - (TEXTURE_UI_BULLET_SIZE_X * (1 + no * 0.5)) * (gun->ammo - i);
 				uiBullet->pos.y = POS_UI_BULLET_Y;
 				uiBullet->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			}
@@ -914,33 +949,37 @@ void SetShot()
 
 	D3DXVECTOR3 pos = player->pos;
 
-	switch (gun->type)
+	if (gun->ammo > 0)
 	{
-	case GUN_PISTOL:
-		pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 0.9;
-		pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 0.9;
-		SetBullet(pos + GetGun()->pos, GetGun()->rot.z, PLAYER_BULLET_PISTOL);
-		break;
-	case GUN_SHOTGUN:
-		pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 1.5;
-		pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 1.5;
-		for (int i = 0; i < SLUG_MAX; i++)
+		switch (gun->type)
 		{
-			float subRot = D3DX_PI * 0.25 * (rand() % 360) / 360 - D3DX_PI * 0.125;
-			SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
-		}
-		break;
-	}
-
-	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
-	{
-		if (!uiBullet->move)
-		{
-			uiBullet->vec.x = rand() % (SPEED_UI_BULLET * 2 + 1) - SPEED_UI_BULLET;
-			uiBullet->vec.y = -(rand() % SPEED_UI_BULLET / 2) - SPEED_UI_BULLET;
-			uiBullet->vecRot = D3DX_PI / (rand() % SPEED_UI_BULLET + 3) * ((rand() % 2 - 0.5) * 2);
-			uiBullet->move = true;
+		case GUN_PISTOL:
+			pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 0.9;
+			pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 0.9;
+			SetBullet(pos + GetGun()->pos, GetGun()->rot.z, PLAYER_BULLET_PISTOL);
+			break;
+		case GUN_SHOTGUN:
+			pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 1.5;
+			pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 1.5;
+			for (int i = 0; i < SLUG_MAX; i++)
+			{
+				float subRot = D3DX_PI * 0.25 * (rand() % 360) / 360 - D3DX_PI * 0.125;
+				SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+			}
 			break;
 		}
+
+		for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+		{
+			if (!uiBullet->move)
+			{
+				uiBullet->vec.x = rand() % (SPEED_UI_BULLET * 2 + 1) - SPEED_UI_BULLET;
+				uiBullet->vec.y = -(rand() % SPEED_UI_BULLET / 2) - SPEED_UI_BULLET;
+				uiBullet->vecRot = D3DX_PI / (rand() % SPEED_UI_BULLET + 3) * ((rand() % 2 - 0.5) * 2);
+				uiBullet->move = true;
+				break;
+			}
+		}
+		gun->ammo--;
 	}
 }

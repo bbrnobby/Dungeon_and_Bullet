@@ -38,6 +38,7 @@ typedef struct	// 銃構造体
 	float			BaseAngle;					// 角度
 
 	int				ammo;						// 装弾数
+	int				interval;					// インターバル
 } GUN;
 
 typedef struct	// 銃(UI)構造体
