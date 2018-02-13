@@ -15,13 +15,16 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define INT_SHOT_PISTOL			(10)	// ピストルの射撃インターバル
-#define INT_SHOT_SHOTOGUN		(30)	// ショットガンの射撃インターバル
+#define INT_SHOT_PISTOL			(20)	// ピストルの射撃インターバル
+#define INT_SHOT_SHOTGUN		(45)	// ショットガンの射撃インターバル
+#define INT_SET_GUN				(30)	// 銃の取り出しインターバル
+#define INT_RELOAD_PISTOL		(80)	// ピストルのリロードインターバル
+#define INT_RELOAD_SHOTGUN		(120)	// ショットガンのリロードインターバル
 #define MAG_PISTOL				(10)	// ピストルのマガジン弾数
 #define MAG_SHOTGUN				(6)		// ショットガンのマガジン弾数
 #define	MAG_MAX					(30)	// 最大弾表示数
 
-#define TEXTURE_UI_GUN			_T("data/TEXTURE/gun000.png")	// 銃のテクスチャ(UI部分)
+#define TEXTURE_UI_GUN			_T("data/TEXTURE/gun000.png")		// 銃のテクスチャ(UI部分)
 #define TEXTURE_UI_WINDOW		_T("data/TEXTURE/window001.png")	// ウィンドウのテクスチャ(UI部分)
 #define TEXTURE_UI_BULLET		_T("data/TEXTURE/bullet000.png")	// 弾のテクスチャ(UI部分)　
 
@@ -37,7 +40,7 @@
 #define POS_UI_BULLET_X		(POS_UI_WINDOW_X - TEXTURE_UI_BULLET_SIZE_X)		// 銃弾(UI)のX座標
 #define POS_UI_BULLET_Y		(SCREEN_HEIGHT - 45 - TEXTURE_UI_BULLET_SIZE_Y)		// 銃弾(UI)のY座標
 
-#define SPEED_UI_BULLET		(10)			// 銃弾(UI)のスピード
+#define SPEED_UI_BULLET		(10)	// 銃弾(UI)のスピード
 
 const char *TEXTURE_GAME_GUN[] =	// 銃のテクスチャ(ゲーム部分)
 {
@@ -59,7 +62,7 @@ LPDIRECT3DTEXTURE9		g_pD3DTextureGun[GUN_MAX] = {};		// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIGun;					// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIBullet;				// テクスチャへのポリゴン
 LPDIRECT3DTEXTURE9		g_pD3DTextureUIWindow;				// テクスチャへのポリゴン
-VERTEX_2D				g_vertexWkOverlay[NUM_VERTEX];	// 頂点情報格納ワーク
+VERTEX_2D				g_vertexWkOverlay[NUM_VERTEX];		// 頂点情報格納ワーク
 
 GUN						gunWk;								// 銃構造体
 UI_GUN					uiGunWk;							// 銃(UI)構造体
@@ -104,9 +107,10 @@ HRESULT InitGun(int type)
 	}
 
 	// 銃の初期化処理
-	gun->use = false;
+	gun->use = true;
+	gun->type = GUN_PISTOL;
 	gun->pos = D3DXVECTOR3(0.0f, TEXTURE_PLAYER_SIZE_Y / 4.0f, 0.0f);
-	gun->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	gun->subPos = D3DXVECTOR3(TEXTURE_PLAYER_SIZE_X / 2.0f, 0.0f, 0.0f);
 	gun->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	gun->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	gun->dirRot = 0.0f;
@@ -116,12 +120,17 @@ HRESULT InitGun(int type)
 	D3DXVECTOR2 temp = D3DXVECTOR2(TEXTURE_GUN_SIZE_X, TEXTURE_GUN_SIZE_Y);
 	gun->Radius = D3DXVec2Length(&temp);								// 銃の半径を初期化
 	gun->BaseAngle = atan2f(TEXTURE_GUN_SIZE_Y, TEXTURE_GUN_SIZE_X);	// 銃の角度を初期化
+	gun->Texture = g_pD3DTextureGun[0];
+
+	gun->ammo = MAG_PISTOL;
+	gun->interval = 0;
+	gun->index = INT_RELOAD_PISTOL;
 
 	// 銃(UI)の初期化処理
 	uiGun->use = false;
 	uiGun->pos = D3DXVECTOR3(POS_UI_GUN_X, POS_UI_GUN_Y, 0.0f);
 	uiGun->subPosX = 0.0f;
-	uiGun->count = -1;
+	uiGun->count = 0;
 	uiGun->Texture = g_pD3DTextureUIGun;
 	
 	// ウィンドウ(UI)の初期化処理
@@ -131,8 +140,17 @@ HRESULT InitGun(int type)
 	// 銃弾(UI)の初期化処理
 	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
 	{
-		uiBullet->use = false;
-		uiBullet->pos = D3DXVECTOR3(POS_UI_BULLET_X, POS_UI_BULLET_Y, 0.0f);
+		if (i < gun->ammo)
+		{
+			uiBullet->use = true;
+			uiBullet->pos.x = POS_UI_BULLET_X - TEXTURE_UI_BULLET_SIZE_X * (gun->ammo - i);
+			uiBullet->pos.y = POS_UI_BULLET_Y;
+		}
+		else
+		{
+			uiBullet->use = false;
+			uiBullet->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
 		uiBullet->vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		uiBullet->move = false;
 		uiBullet->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -146,7 +164,7 @@ HRESULT InitGun(int type)
 	}
 
 	// 頂点情報の作成
-	MakeVertexGun();	
+	MakeVertexGun();
 
 	// 所持フラグの初期化
 	for (int i = 0; i < GUN_MAX; i++)
@@ -194,8 +212,8 @@ void UninitGun(void)
 //=============================================================================
 void UpdateGun(void)
 {
-	GUN *gun = &gunWk;					
-	PLAYER *player = GetPlayer();		
+	GUN *gun = &gunWk;
+	PLAYER *player = GetPlayer();
 	UI_GUN *uiGun = &uiGunWk;
 	UI_WINDOW *uiWin = &uiWinWk;
 	UI_BULLET *uiBullet = uiBulletWk;
@@ -220,13 +238,13 @@ void UpdateGun(void)
 		{
 			gun->isLocked = false;	// 銃を非固定に
 			gun->subRot = 0.0f;		// 斜めの回転をリセット
+		}
 
-			// 銃の切り替え
-			if (GetKeyboardTrigger(DIK_E) || IsButtonTriggered(0, BUTTON_C))
-			{
-				player->gunType = (player->gunType + 1) % GUN_MAX;
-				SetGun(player->gunType);
-			}
+		// 銃の切り替え
+		if (GetKeyboardTrigger(DIK_E) || IsButtonTriggered(0, BUTTON_C))
+		{
+			player->gunType = (player->gunType + 1) % GUN_MAX;
+			SetGun(player->gunType);
 		}
 
 		// 銃非固定時
@@ -392,49 +410,65 @@ void UpdateGun(void)
 		}
 
 		// 回転の更新
-		gun->dirRot = (player->dir * D3DX_PI / 2 + gun->subRot + gun->dirRot * 5) / 6;
+		if (gun->ammo == 0 && gun->interval > INT_SET_GUN)
+		{
+			gun->dirRot = ((player->dir == DIR_LEFT ? DIR_UP : player->dir - 1) * D3DX_PI / 2 + gun->subRot + gun->dirRot * 5) / 6;
+		}
+		else
+		{
+			gun->dirRot = (player->dir * D3DX_PI / 2 + gun->subRot + gun->dirRot * 5) / 6;
+		}
 		gun->rot.z = player->rot.z * 2 + gun->dirRot;
 
 		// 位置の更新
 		gun->pos.x = (gun->subPos.x + gun->pos.x * 2) / 3;
 		gun->pos.y = (gun->subPos.y + player->subRot + gun->pos.y * 2) / 3;
+	}
+	if (gun->interval > 0)
+	{
+		gun->interval--;
+	}
 
-		SetVertexGun();	// 移動後の座標で頂点を設定
+	// リロード
+	if (gun->ammo == 0 && gun->interval == INT_SET_GUN)
+	{
+		SetGun(gun->type);
+	}
 
-		// 位置の更新
-		if (TEXTURE_UI_GUN_SIZE * uiGun->count - uiGun->subPosX < 0.1f && uiGun->count % GUN_MAX == 0)
-		{
-			uiGun->subPosX = 0.0f;
-			uiGun->count = 0;
-		}
-		else
-		{
-			uiGun->subPosX = (uiGun->subPosX * 3 + uiGun->count * TEXTURE_UI_GUN_SIZE) / 4;
-		}
+	// 位置の更新
+	if (TEXTURE_UI_GUN_SIZE * uiGun->count - uiGun->subPosX < 0.1f && uiGun->count % GUN_MAX == 0)
+	{
+		uiGun->subPosX = 0.0f;
+		uiGun->count = 0;
+	}
+	else
+	{
+		uiGun->subPosX = (uiGun->subPosX * 3 + uiGun->count * TEXTURE_UI_GUN_SIZE) / 4;
+	}
 
-		for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
+	{
+		if (uiBullet->move)
 		{
-			if (uiBullet->move)
+			uiBullet->vec.y += 1.0f;
+			uiBullet->vec.x *= 0.9f;
+			uiBullet->pos += uiBullet->vec;
+			uiBullet->rot.z += uiBullet->vecRot;
+
+			if (uiBullet->pos.y > SCREEN_HEIGHT)
 			{
-				uiBullet->vec.y += 1.0f;
-				uiBullet->vec.x *= 0.9f;
-				uiBullet->pos += uiBullet->vec;
-				uiBullet->rot.z += uiBullet->vecRot;
-
-				if (uiBullet->pos.y > SCREEN_HEIGHT)
-				{
-					uiBullet->use = false;
-				}
+				uiBullet->use = false;
 			}
 		}
+	}
 
 #ifdef _DEBUG
-		PrintDebugProc("count:%d\n", uiGun->count);
-		PrintDebugProc("type:%d\n", gun->type);
+	PrintDebugProc("count:%d\n", uiGun->count);
+	PrintDebugProc("type:%d\n", gun->type);
 #endif
 
-		SetTextureGun();
-	}
+	SetVertexGun();
+	SetTextureGun();
 }
 
 //=============================================================================
@@ -729,11 +763,11 @@ void SetVertexGun(void)
 
 	// 頂点座標の設定
 	g_vertexWkOverlay[0].vtx.x = uiGun->pos.x;
-	g_vertexWkOverlay[0].vtx.y = uiGun->pos.y;
+	g_vertexWkOverlay[0].vtx.y = uiGun->pos.y + (TEXTURE_UI_GUN_SIZE * (1.0 - (float)gun->interval / gun->index));
 	g_vertexWkOverlay[0].vtx.z = 0.0f;
 
 	g_vertexWkOverlay[1].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
-	g_vertexWkOverlay[1].vtx.y = uiGun->pos.y;
+	g_vertexWkOverlay[1].vtx.y = uiGun->pos.y + (TEXTURE_UI_GUN_SIZE * (1.0 - (float)gun->interval / gun->index));
 	g_vertexWkOverlay[1].vtx.z = 0.0f;
 
 	g_vertexWkOverlay[2].vtx.x = uiGun->pos.x;
@@ -768,18 +802,46 @@ void SetGun(int no)
 	if (g_bGun[no])
 	{	// 所持している時
 		gun->pos = D3DXVECTOR3(0.0f, TEXTURE_PLAYER_SIZE_Y / 4.0f, 0.0f);
-		gun->type = no;
-		gun->dirRot -= D3DX_PI;
+		if (gun->ammo != 0) gun->dirRot -= D3DX_PI;
 
-		gun->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		switch (player->dir)
+		if (gun->type != no)
 		{
-		case DIR_RIGHT:	// 右
-			if (gun->isLocked)
+			gun->type = no;
+			if (gun->ammo != 0) gun->interval = gun->index = INT_SET_GUN;
+			gun->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			switch (player->dir)
 			{
-				if (gun->type == GUN_SHOTGUN)
+			case DIR_RIGHT:	// 右
+				if (gun->isLocked)
 				{
-					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
+					if (gun->type == GUN_SHOTGUN)
+					{
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
+						if (gun->subRot > 0)
+						{
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
+						}
+						else if (gun->subRot < 0)
+						{
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
+						}
+					}
+					else
+					{
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
+						if (gun->subRot > 0)
+						{
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
+						}
+						else if (gun->subRot < 0)
+						{
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
+						}
+					}
+				}
+				else
+				{
+					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
 					if (gun->subRot > 0)
 					{
 						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
@@ -789,116 +851,93 @@ void SetGun(int no)
 						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
 				}
+				break;
+			case DIR_DOWN:	// 下
+				if (gun->isLocked)
+				{
+					if (gun->type == GUN_SHOTGUN)
+					{
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 4.0f;
+						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 8.0f;
+					}
+					else
+					{
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
+						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 8.0f * 3;
+					}
+				}
 				else
-				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
-					if (gun->subRot > 0)
-					{
-						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
-					}
-					else if (gun->subRot < 0)
-					{
-						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-					}
-				}
-			}
-			else
-			{
-				gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-				if (gun->subRot > 0)
-				{
-					gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
-				}
-				else if (gun->subRot < 0)
-				{
-					gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
-				}
-			}
-			break;
-		case DIR_DOWN:	// 下
-			if (gun->isLocked)
-			{
-				if (gun->type == GUN_SHOTGUN)
 				{
 					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 4.0f;
-					gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 8.0f;
-				}
-				else
-				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-					gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 8.0f * 3;
-				}
-			}
-			else
-			{
-				gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 4.0f;
-				gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 4.0f;
-			}
-			break;
-		case DIR_LEFT:	// 左
-			if (gun->isLocked)
-			{
-				if (gun->type == GUN_SHOTGUN)
-				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-					if (gun->subRot < 0)
-					{
-						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
-					}
-					else if (gun->subRot > 0)
-					{
-						gun->subPos.y += TEXTURE_PLAYER_SIZE_Y / 8.0f;
-					}
-				}
-				else
-				{
-					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f * 3;
-					if (gun->subRot < 0)
-					{
-						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
-					}
-					else if (gun->subRot > 0)
-					{
-						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
-						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
-					}
-				}
-			}
-			else
-			{
-				gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-				if (gun->subRot < 0)
-				{
-					gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
-				}
-				else if (gun->subRot > 0)
-				{
-					gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
-					gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 8.0f;
-				}
-			}
-			break;
-		case DIR_UP:	// 上
-			if (gun->isLocked)
-			{
-				if (gun->type == GUN_SHOTGUN)
-				{
-					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
 					gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 4.0f;
+				}
+				break;
+			case DIR_LEFT:	// 左
+				if (gun->isLocked)
+				{
+					if (gun->type == GUN_SHOTGUN)
+					{
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
+						if (gun->subRot < 0)
+						{
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
+							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
+						}
+						else if (gun->subRot > 0)
+						{
+							gun->subPos.y += TEXTURE_PLAYER_SIZE_Y / 8.0f;
+						}
+					}
+					else
+					{
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f * 3;
+						if (gun->subRot < 0)
+						{
+							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
+						}
+						else if (gun->subRot > 0)
+						{
+							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
+							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
+						}
+					}
 				}
 				else
 				{
 					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-					gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 4.0f;
+					if (gun->subRot < 0)
+					{
+						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
+					}
+					else if (gun->subRot > 0)
+					{
+						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
+						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 8.0f;
+					}
 				}
+				break;
+			case DIR_UP:	// 上
+				if (gun->isLocked)
+				{
+					if (gun->type == GUN_SHOTGUN)
+					{
+						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
+						gun->subPos.y = TEXTURE_PLAYER_SIZE_Y / 4.0f;
+					}
+					else
+					{
+						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
+						gun->subPos.y = -TEXTURE_PLAYER_SIZE_Y / 4.0f;
+					}
+				}
+				else
+				{
+					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
+					gun->subPos.y = 0.0f;
+				}
+				break;
 			}
-			else
-			{
-				gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
-				gun->subPos.y = 0.0f;
-			}
-			break;
+			uiGun->count++;
 		}
 
 		switch (no)
@@ -929,12 +968,8 @@ void SetGun(int no)
 			}
 		}
 
-
-		uiGun->count++;
-
 		MakeVertexGun();
 		gun->Texture = g_pD3DTextureGun[no];	// テクスチャ情報を更新
-
 	}
 }
 
@@ -949,7 +984,7 @@ void SetShot()
 
 	D3DXVECTOR3 pos = player->pos;
 
-	if (gun->ammo > 0)
+	if (gun->ammo > 0 && gun->interval == 0)
 	{
 		switch (gun->type)
 		{
@@ -957,14 +992,35 @@ void SetShot()
 			pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 0.9;
 			pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.2 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 0.9;
 			SetBullet(pos + GetGun()->pos, GetGun()->rot.z, PLAYER_BULLET_PISTOL);
+			if (gun->isLocked)
+			{
+				gun->interval = gun->index = INT_SHOT_PISTOL / 2;
+			}
+			else
+			{
+				gun->interval = gun->index = INT_SHOT_PISTOL;
+			}
 			break;
 		case GUN_SHOTGUN:
 			pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 1.5;
 			pos.y += TEXTURE_PLAYER_SIZE_Y * ((1 + player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_Y * sinf(GetGun()->rot.z) * 1.5;
-			for (int i = 0; i < SLUG_MAX; i++)
+			if (gun->isLocked)
 			{
-				float subRot = D3DX_PI * 0.25 * (rand() % 360) / 360 - D3DX_PI * 0.125;
-				SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+				for (int i = 0; i < SLUG_MAX; i++)
+				{
+					float subRot = D3DX_PI * 0.166 * (rand() % 360) / 360 - D3DX_PI * 0.083;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+				}
+				gun->interval = gun->index = INT_SHOT_SHOTGUN / 1.5;
+			}
+			else
+			{
+				for (int i = 0; i < SLUG_MAX; i++)
+				{
+					float subRot = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+				}
+				gun->interval = gun->index = INT_SHOT_SHOTGUN;
 			}
 			break;
 		}
@@ -981,5 +1037,18 @@ void SetShot()
 			}
 		}
 		gun->ammo--;
+
+		if (gun->ammo == 0)
+		{
+			switch (gun->type)
+			{
+			case GUN_PISTOL:
+				gun->interval = gun->index = INT_RELOAD_PISTOL;
+				break;
+			case GUN_SHOTGUN:
+				gun->interval = gun->index = INT_RELOAD_SHOTGUN;
+				break;
+			}
+		}
 	}
 }

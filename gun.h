@@ -14,7 +14,7 @@
 //*****************************************************************************
 #define TEXTURE_GUN_SIZE_X			(96)		// テクスチャサイズ
 #define TEXTURE_GUN_SIZE_Y			(96)		// 同上
-#define SLUG_MAX					(11)		// 散弾数
+#define SLUG_MAX					(10)		// 散弾数
 
 //*****************************************************************************
 // 構造体宣言
@@ -39,6 +39,7 @@ typedef struct	// 銃構造体
 
 	int				ammo;						// 装弾数
 	int				interval;					// インターバル
+	int				index;						// 状態表示用
 } GUN;
 
 typedef struct	// 銃(UI)構造体

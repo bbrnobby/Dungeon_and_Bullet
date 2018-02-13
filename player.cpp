@@ -221,6 +221,7 @@ void UpdatePlayer(void)
 				player->rot.z = 0.0f;
 				player->PatternAnim = 1;
 				SetTexturePlayer(player->PatternAnim + player->dir * PLAYER_ANIM_PATTERN_NUM);
+				SetGun(GetGun()->type);
 			}
 
 			// ’e”­ŽË
@@ -499,8 +500,6 @@ void SetPlayer(float x, float y)
 	player->interval = MESSAGE_INTERVAL;
 	player->hp = MAX_HP * (HEART_DIVIDE - 1);
 	player->movable = true;
-
-	SetGun(player->gunType);
 }
 
 void KnockBackPlayer(PLAYER *player, float rotZ)

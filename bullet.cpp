@@ -278,7 +278,7 @@ void SetBullet(D3DXVECTOR3 pos, float rot, int type)
 				bullet->duration = BULLET_DURATION_SHOTGUN;
 				bullet->Radius = BULLET_SIZE_SHOTGUN;
 
-				rate = (rand() % 50 + 75) / 100.0f;
+				rate = (rand() % 20 + 90) / 100.0f;
 
 				bullet->vec.x = cosf(rot) * BULLET_SPEED_SHOTGUN * rate;
 				bullet->vec.y = sinf(rot) * BULLET_SPEED_SHOTGUN * rate;
