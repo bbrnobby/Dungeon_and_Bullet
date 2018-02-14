@@ -13,7 +13,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_GAME_POINTER		_T("data/TEXTURE/pointer001.png")	// 画像
+#define TEXTURE_GAME_POINTER			_T("data/TEXTURE/pointer001.png")	// 画像
 #define TEXTURE_POINTER_SIZE_X			(16)	// テクスチャサイズ
 #define TEXTURE_POINTER_SIZE_Y			(16)	// 同上
 
@@ -139,7 +139,6 @@ void UpdatePointer(void)
 			
 			// 頂点を設定
 			SetVertexPointer(i);	
-			PrintDebugProc("POINTER[%d] X:%f Y:%f\n", pointer->no, pointer->pos.x, pointer->pos.y);
 		}
 	}
 }

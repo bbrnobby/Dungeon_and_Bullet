@@ -749,8 +749,7 @@ void EnterRoom(int ID)
 	}
 
 	// エネミーのスポーン
-	int spawnNum = room->cntEnemy / 2;
-	if (spawnNum < ENEMY_ROOM_MIN_NUM) spawnNum = ENEMY_ROOM_MIN_NUM;
+	int spawnNum = (room->cntEnemy / 2 < ENEMY_ROOM_MIN_NUM) ? ENEMY_ROOM_MIN_NUM : room->cntEnemy / 2;
 	for (int i = 0; i < spawnNum; i++)
 	{
 		float Ex, Ey;

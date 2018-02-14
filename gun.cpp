@@ -11,6 +11,7 @@
 #include "camera.h"
 #include "debugproc.h"
 #include "input.h"
+#include "font.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -33,14 +34,15 @@
 #define TEXTURE_UI_BULLET_SIZE_X	(16)	// 銃弾(UI)のテクスチャXサイズ
 #define TEXTURE_UI_BULLET_SIZE_Y	(32)	// 銃弾(UI)のテクスチャYサイズ
 
-#define POS_UI_GUN_X		(SCREEN_WIDTH - 30 - (TEXTURE_UI_GUN_SIZE + TEXTURE_UI_WIN_SIZE) / 2)	// 銃(UI)のX座標
-#define POS_UI_GUN_Y		(SCREEN_HEIGHT - 30 - (TEXTURE_UI_GUN_SIZE + TEXTURE_UI_WIN_SIZE) / 2)	// 銃(UI)のY座標
-#define POS_UI_WINDOW_X		(SCREEN_WIDTH - 30 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのX座標
-#define POS_UI_WINDOW_Y		(SCREEN_HEIGHT - 30 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのY座標
+#define POS_UI_GUN_X		(SCREEN_WIDTH - 60 - (TEXTURE_UI_GUN_SIZE + TEXTURE_UI_WIN_SIZE) / 2)	// 銃(UI)のX座標
+#define POS_UI_GUN_Y		(SCREEN_HEIGHT - 60 - (TEXTURE_UI_GUN_SIZE + TEXTURE_UI_WIN_SIZE) / 2)	// 銃(UI)のY座標
+#define POS_UI_WINDOW_X		(SCREEN_WIDTH - 60 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのX座標
+#define POS_UI_WINDOW_Y		(SCREEN_HEIGHT - 60 - TEXTURE_UI_WIN_SIZE)		// ウィンドウのY座標
 #define POS_UI_BULLET_X		(POS_UI_WINDOW_X - TEXTURE_UI_BULLET_SIZE_X)		// 銃弾(UI)のX座標
-#define POS_UI_BULLET_Y		(SCREEN_HEIGHT - 45 - TEXTURE_UI_BULLET_SIZE_Y)		// 銃弾(UI)のY座標
+#define POS_UI_BULLET_Y		(SCREEN_HEIGHT - 60 - TEXTURE_UI_BULLET_SIZE_Y)		// 銃弾(UI)のY座標
 
-#define SPEED_UI_BULLET		(10)	// 銃弾(UI)のスピード
+#define SPEED_UI_BULLET		(10)	// 弾(UI)の速度
+#define START_SLUGS			(12)	// ショットガンの初期弾数
 
 const char *TEXTURE_GAME_GUN[] =	// 銃のテクスチャ(ゲーム部分)
 {
@@ -125,6 +127,8 @@ HRESULT InitGun(int type)
 	gun->ammo = MAG_PISTOL;
 	gun->interval = 0;
 	gun->index = INT_RELOAD_PISTOL;
+	gun->numBullets = 0;
+	gun->numSlug = START_SLUGS;
 
 	// 銃(UI)の初期化処理
 	uiGun->use = false;
@@ -171,6 +175,7 @@ HRESULT InitGun(int type)
 	{
 		g_bGun[i] = true;
 	}
+
 	return S_OK;
 }
 
@@ -227,6 +232,7 @@ void UpdateGun(void)
 		break;
 	case PLAYER_RUN:
 		gun->use = false;
+		gun->interval = gun->index = 1;
 		break;
 	}
 
@@ -424,10 +430,6 @@ void UpdateGun(void)
 		gun->pos.x = (gun->subPos.x + gun->pos.x * 2) / 3;
 		gun->pos.y = (gun->subPos.y + player->subRot + gun->pos.y * 2) / 3;
 	}
-	if (gun->interval > 0)
-	{
-		gun->interval--;
-	}
 
 	// リロード
 	if (gun->ammo == 0 && gun->interval == INT_SET_GUN)
@@ -462,13 +464,30 @@ void UpdateGun(void)
 		}
 	}
 
-#ifdef _DEBUG
-	PrintDebugProc("count:%d\n", uiGun->count);
-	PrintDebugProc("type:%d\n", gun->type);
-#endif
-
 	SetVertexGun();
 	SetTextureGun();
+
+	char string[15];
+	switch (gun->type)
+	{
+	case GUN_PISTOL:
+		sprintf(string, "PISTOL*?");
+		break;
+	case GUN_SHOTGUN:
+		sprintf(string, "SHOTGUN*%-2d", gun->numSlug);
+		break;
+	}
+
+	SetString(string, POS_UI_WINDOW_X + TEXTURE_UI_GUN_SIZE / 2, POS_UI_WINDOW_Y + TEXTURE_UI_GUN_SIZE + TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE * 0.5, 1);
+
+	if (gun->interval > 0)
+	{
+		gun->interval--;
+	}
+
+#ifdef _DEBUG
+	PrintDebugProc("GUN BULLET:%d SLUG:%d\n", gun->numBullets, gun->numSlug);
+#endif
 }
 
 //=============================================================================
@@ -802,12 +821,15 @@ void SetGun(int no)
 	if (g_bGun[no])
 	{	// 所持している時
 		gun->pos = D3DXVECTOR3(0.0f, TEXTURE_PLAYER_SIZE_Y / 4.0f, 0.0f);
-		if (gun->ammo != 0) gun->dirRot -= D3DX_PI;
+		if (gun->ammo != 0)
+		{
+			gun->dirRot -= D3DX_PI;
+			gun->interval = gun->index = INT_SET_GUN;
+		}
 
 		if (gun->type != no)
 		{
 			gun->type = no;
-			if (gun->ammo != 0) gun->interval = gun->index = INT_SET_GUN;
 			gun->subPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			switch (player->dir)
 			{
@@ -946,7 +968,7 @@ void SetGun(int no)
 			gun->ammo = MAG_PISTOL;
 			break;
 		case GUN_SHOTGUN:
-			gun->ammo = MAG_SHOTGUN;
+			gun->ammo = (MAG_SHOTGUN < gun->numSlug) ? MAG_SHOTGUN : gun->numSlug;
 			break;
 		}
 
@@ -1000,6 +1022,7 @@ void SetShot()
 			{
 				gun->interval = gun->index = INT_SHOT_PISTOL;
 			}
+			gun->numBullets++;
 			break;
 		case GUN_SHOTGUN:
 			pos.x += -TEXTURE_PLAYER_SIZE_X * ((2 - player->dir) % 2) * 0.125 + TEXTURE_PLAYER_SIZE_X * cosf(GetGun()->rot.z) * 1.5;
@@ -1022,6 +1045,7 @@ void SetShot()
 				}
 				gun->interval = gun->index = INT_SHOT_SHOTGUN;
 			}
+			gun->numSlug--;
 			break;
 		}
 

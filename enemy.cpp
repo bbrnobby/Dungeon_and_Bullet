@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "pointer.h"
 #include "particle.h"
+#include "debugproc.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -46,9 +47,11 @@ void AttackEnemy(ENEMY *enemy);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-LPDIRECT3DTEXTURE9		g_pD3DTextureEnemy = NULL;		// テクスチャへのポリゴン
+LPDIRECT3DTEXTURE9		g_pD3DTextureEnemy = NULL;						// テクスチャへのポリゴン
+VERTEX_2D				g_vertexWkHPEnemy[ENEMY_MAX][NUM_VERTEX];		// 頂点情報格納ワーク
+VERTEX_2D				g_vertexWkMaxHPEnemy[ENEMY_MAX][NUM_VERTEX];	// 頂点情報格納ワーク
 
-ENEMY					enemyWk[ENEMY_MAX];				// エネミー構造体
+ENEMY					enemyWk[ENEMY_MAX];								// エネミー構造体
 
 //=============================================================================
 // 初期化処理
@@ -80,7 +83,7 @@ HRESULT InitEnemy(int type)
 		enemy->PatternAnim = 0;									// アニメパターン番号を初期化
 		enemy->CountAnim = 0;									// アニメカウントを初期化
 		enemy->notice = false;
-		enemy->roomID = false;
+		enemy->roomID = -1;
 		enemy->type = 0;
 		enemy->state = ENEMY_DEFAULT_STATE;
 		enemy->interval = 0;
@@ -201,6 +204,9 @@ void UpdateEnemy(void)
 				}
 			}
 			SetVertexEnemy(i);	// 移動後の座標で頂点を設定
+#ifdef _DEBUG
+			PrintDebugProc("ENEMEY[%d] X:%f Y:%f ROOM:%d STATE:%d\n", i, enemy->pos.x, enemy->pos.y, enemy->roomID, enemy->state);
+#endif
 		}
 	}
 }
@@ -218,13 +224,25 @@ void DrawEnemy(void)
 
 	for (int i = 0; i < ENEMY_MAX; i++, enemy++)
 	{
-		if (enemy->state != ENEMY_DEFAULT_STATE)		
+		if (enemy->state != ENEMY_DEFAULT_STATE)
 		{	// 出現している状態なら描画する
 			// テクスチャの設定
 			pDevice->SetTexture(0, enemy->Texture);
 
 			// ポリゴンの描画
 			pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, enemy->vertexWk, sizeof(VERTEX_2D));
+
+			if (enemy->state < ENEMY_SPAWN)
+			{
+				// テクスチャの設定
+				pDevice->SetTexture(0, NULL);
+
+				// ポリゴンの描画
+				pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkMaxHPEnemy[i], sizeof(VERTEX_2D));
+
+				// ポリゴンの描画
+				pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkHPEnemy[i], sizeof(VERTEX_2D));
+			}
 		}
 	}
 }
@@ -258,10 +276,29 @@ HRESULT MakeVertexEnemy( int no )
 	enemy->vertexWk[2].tex = D3DXVECTOR2(0.0f, 1.0f / ENEMY_TEXTURE_PATTERN_DIVIDE_Y);
 	enemy->vertexWk[3].tex = D3DXVECTOR2( 1.0f/ ENEMY_TEXTURE_PATTERN_DIVIDE_X, 1.0f/ENEMY_TEXTURE_PATTERN_DIVIDE_Y);
 
-	//enemy->vertexWk[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	//enemy->vertexWk[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-	//enemy->vertexWk[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-	//enemy->vertexWk[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	// rhwの設定
+	g_vertexWkHPEnemy[no][0].rhw =
+	g_vertexWkHPEnemy[no][1].rhw =
+	g_vertexWkHPEnemy[no][2].rhw =
+	g_vertexWkHPEnemy[no][3].rhw = 1.0f;
+
+	// 反射光の設定
+	g_vertexWkHPEnemy[no][0].diffuse = D3DCOLOR_RGBA(0, 255, 0, 255);
+	g_vertexWkHPEnemy[no][1].diffuse = D3DCOLOR_RGBA(0, 255, 0, 255);
+	g_vertexWkHPEnemy[no][2].diffuse = D3DCOLOR_RGBA(0, 255, 0, 255);
+	g_vertexWkHPEnemy[no][3].diffuse = D3DCOLOR_RGBA(0, 255, 0, 255);
+
+	// rhwの設定
+	g_vertexWkMaxHPEnemy[no][0].rhw =
+	g_vertexWkMaxHPEnemy[no][1].rhw =
+	g_vertexWkMaxHPEnemy[no][2].rhw =
+	g_vertexWkMaxHPEnemy[no][3].rhw = 1.0f;
+
+	// 反射光の設定
+	g_vertexWkMaxHPEnemy[no][0].diffuse = D3DCOLOR_RGBA(255, 0, 0, 255);
+	g_vertexWkMaxHPEnemy[no][1].diffuse = D3DCOLOR_RGBA(255, 0, 0, 255);
+	g_vertexWkMaxHPEnemy[no][2].diffuse = D3DCOLOR_RGBA(255, 0, 0, 255);
+	g_vertexWkMaxHPEnemy[no][3].diffuse = D3DCOLOR_RGBA(255, 0, 0, 255);
 
 	return S_OK;
 }
@@ -309,6 +346,41 @@ void SetVertexEnemy( int no )
 	enemy->vertexWk[3].vtx.x = enemy->pos.x + posCamera->x + cosf(enemy->BaseAngle + enemy->rot.z) * enemy->Radius;
 	enemy->vertexWk[3].vtx.y = enemy->pos.y + posCamera->y + sinf(enemy->BaseAngle + enemy->rot.z) * enemy->Radius;
 	enemy->vertexWk[3].vtx.z = 0.0f;
+
+	// 頂点座標の設定
+	g_vertexWkHPEnemy[no][0].vtx.x = enemy->pos.x + posCamera->x - TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkHPEnemy[no][0].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y;
+	g_vertexWkHPEnemy[no][0].vtx.z = 0.0f;
+
+	g_vertexWkHPEnemy[no][1].vtx.x = enemy->pos.x + posCamera->x + TEXTURE_ENEMY_SIZE_X * (1.0 - 2.0 * (1.0 - (float)enemy->hp / enemy->maxhp));
+	g_vertexWkHPEnemy[no][1].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y;
+	g_vertexWkHPEnemy[no][1].vtx.z = 0.0f;
+
+	g_vertexWkHPEnemy[no][2].vtx.x = enemy->pos.x + posCamera->x - TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkHPEnemy[no][2].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y + 5;
+	g_vertexWkHPEnemy[no][2].vtx.z = 0.0f;
+
+	g_vertexWkHPEnemy[no][3].vtx.x = enemy->pos.x + posCamera->x + TEXTURE_ENEMY_SIZE_X * (1.0 - 2.0 * (1.0 - (float)enemy->hp / enemy->maxhp));
+	g_vertexWkHPEnemy[no][3].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y + 5;
+	g_vertexWkHPEnemy[no][3].vtx.z = 0.0f;
+
+	// 頂点座標の設定
+	g_vertexWkMaxHPEnemy[no][0].vtx.x = enemy->pos.x + posCamera->x - TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkMaxHPEnemy[no][0].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y;
+	g_vertexWkMaxHPEnemy[no][0].vtx.z = 0.0f;
+
+	g_vertexWkMaxHPEnemy[no][1].vtx.x = enemy->pos.x + posCamera->x + TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkMaxHPEnemy[no][1].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y;
+	g_vertexWkMaxHPEnemy[no][1].vtx.z = 0.0f;
+
+	g_vertexWkMaxHPEnemy[no][2].vtx.x = enemy->pos.x + posCamera->x - TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkMaxHPEnemy[no][2].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y + 5;
+	g_vertexWkMaxHPEnemy[no][2].vtx.z = 0.0f;
+
+	g_vertexWkMaxHPEnemy[no][3].vtx.x = enemy->pos.x + posCamera->x + TEXTURE_ENEMY_SIZE_X;
+	g_vertexWkMaxHPEnemy[no][3].vtx.y = enemy->pos.y + posCamera->y - TEXTURE_ENEMY_SIZE_Y + 5;
+	g_vertexWkMaxHPEnemy[no][3].vtx.z = 0.0f;
+
 }
 
 void SetDiffuseEnemy(int no)
@@ -321,7 +393,7 @@ void SetDiffuseEnemy(int no)
 	{
 		fade = 255;
 	}
-	else if (enemy->state > ENEMY_APPEAR_STATE)
+	else if (enemy->state > ENEMY_SPAWN)
 	{
 		fade = 255 * enemy->interval / ENEMY_INTERVAL_FADE;
 	}
@@ -374,7 +446,8 @@ bool SpawnEnemy(float x, float y, int ID)
 
 	for (int i = 0; i < ENEMY_MAX; i++, enemy++)
 	{
-		if (enemy->use && enemy->roomID == ID && (enemy->state == ENEMY_DEFAULT_STATE || enemy->state == ENEMY_DESPAWN))
+		if (enemy->use && enemy->roomID == ID 
+			&& (enemy->state == ENEMY_DEFAULT_STATE || enemy->state == ENEMY_DESPAWN))
 		{
 			if (enemy->state == ENEMY_DEFAULT_STATE)
 			{
@@ -391,7 +464,7 @@ bool SpawnEnemy(float x, float y, int ID)
 				switch (enemy->type)
 				{
 				case 0:
-					enemy->hp = ENEMY_HP_001;
+					enemy->hp = enemy->maxhp = ENEMY_HP_001;
 					//enemy->score = ENEMY_SCORE_001;
 					break;
 				}
@@ -423,7 +496,7 @@ void DeSpawnEnemy(int ID)
 
 	for (int i = 0; i < ENEMY_MAX; i++, enemy++)
 	{
-		if (enemy->use && enemy->roomID == ID && enemy->state < ENEMY_APPEAR_STATE)
+		if (enemy->use && enemy->roomID == ID && enemy->state < ENEMY_DESPAWN)
 		{
 			SetState(enemy, ENEMY_DESPAWN);
 

@@ -32,7 +32,6 @@ enum ENEMY_STATE
 	ENEMY_DEFAULT_STATE,
 	ENEMY_DAMAGE,
 	ENEMY_SPAWN,
-	ENEMY_APPEAR_STATE,
 	ENEMY_DESPAWN,
 	ENEMY_DEAD
 };
@@ -59,6 +58,7 @@ typedef struct	// エネミー構造体
 	int				interval;					// インターバル
 
 	int				hp;							// エネミーの体力
+	int				maxhp;						// エネミーの体力
 	//int				score;					// 倒した時のスコア
 
 	LPDIRECT3DTEXTURE9	Texture;				// テクスチャ情報

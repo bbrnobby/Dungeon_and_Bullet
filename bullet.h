@@ -29,7 +29,7 @@
 #define BULLET_SPINSPEED				(0.3f)		// 弾の回転速度
 
 #define BULLET_DURATION_PISTOL			(120)		// バレットの持続時間
-#define BULLET_DURATION_SHOTGUN			(20)		// バレットの持続時間
+#define BULLET_DURATION_SHOTGUN			(30)		// バレットの持続時間
 #define BULLET_DURATION_ENEMY			(1000)		// エネミーのバレット持続時間
 
 enum type

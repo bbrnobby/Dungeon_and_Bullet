@@ -791,16 +791,11 @@ LPDIRECT3DDEVICE9 GetDevice(void)
 void UpdateDebugFont(void)
 {
 	PLAYER *player = GetPlayer();
-	D3DXVECTOR3 *posCamera = GetCameraPos();
-	D3DXVECTOR3 *vecCamera = GetCameraVec();
 	PARTICLE *particle = GetParticle(0);
 
 	// ƒeƒLƒXƒg•`‰æ
 	PrintDebugProc("FPS:%d\n", g_nCountFPS);
 	PrintDebugProc("PX:%f  PY:%f  MX:%d  MY:%d\n", player->pos.x, player->pos.y, (int)(player->pos.x / TEXTURE_DUNGEON_SIZE_X), (int)(player->pos.y / TEXTURE_DUNGEON_SIZE_Y));
-	PrintDebugProc("CPX:%f  CPY:%f\n", posCamera->x, posCamera->y);
-	PrintDebugProc("CVX:%f  CVY:%f\n", vecCamera->x, vecCamera->y);
-	PrintDebugProc("GUNTYPE = %d\n", player->gunType);
 
 	int id = GetRoomIDByPos(player->pos.x, player->pos.y);
 	if (id != -1)
@@ -930,7 +925,7 @@ void CheckHit(void)
 				KnockBackEnemy(enemy, ENEMY_KNOCKBACK_SPEED, atan2(enemy->pos.y - enemy2->pos.y, enemy->pos.x - enemy2->pos.x));
 				KnockBackEnemy(enemy2, ENEMY_KNOCKBACK_SPEED, atan2(enemy2->pos.y - enemy->pos.y, enemy2->pos.x - enemy->pos.x));
 				// “G‚ÌHPŒ¸­ˆ—
-				enemy2->hp -= 1;
+				enemy2->hp -= enemy->maxhp;
 				if (enemy2->hp <= 0)
 				{
 					DeleteEnemy(enemy2);

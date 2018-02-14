@@ -40,6 +40,8 @@ typedef struct	// 銃構造体
 	int				ammo;						// 装弾数
 	int				interval;					// インターバル
 	int				index;						// 状態表示用
+	int				numBullets;					// ピストル弾数
+	int				numSlug;					// ショットガン弾数
 } GUN;
 
 typedef struct	// 銃(UI)構造体
