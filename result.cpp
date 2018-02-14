@@ -8,39 +8,29 @@
 #include "result.h"
 #include "input.h"
 #include "fade.h"
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define	TEXTURE_RESULT			_T("data/TEXTURE/TITLE/title_bg_mono.png")	// 読み込むテクスチャファイル名
-#define	TEXTURE_RESULT_LOGO		_T("data/TEXTURE/result_logo.png")			// 読み込むテクスチャファイル名
-#define TEXTURE_RESULT_IMAGE	_T("data/TEXTURE/kaizoku_takara.png")		// 読み込むテクスチャファイル名
-
-#define	RESULTLOGO_POS_X		(SCREEN_CENTER_X - 240)	// リザルトロゴの表示位置
-#define	RESULTLOGO_POS_Y		(120)					// リザルトロゴの表示位置
-#define	RESULTLOGO_SIZE_X		(480)					// リザルトロゴの幅
-#define	RESULTLOGO_SIZE_Y		(80)					// リザルトロゴの高さ
-
-#define	RESULTIMAGE_POS_X		(SCREEN_CENTER_X - 160)	// リザルト画像の表示位置
-#define	RESULTIMAGE_POS_Y		(SCREEN_HEIGHT - 480)	// リザルト画像の表示位置
-#define	RESULTIMAGE_SIZE_X		(320)					// リザルト画像の幅
-#define	RESULTIMAGE_SIZE_Y		(320)					// リザルト画像の高さ
+#define	TEXTURE_RESULT			_T("data/TEXTURE/TITLE/title_bg.png")			// 読み込むテクスチャファイル名
+#define TEXTURE_GAMEOVER		_T("data/TEXTURE/TITLE/title_bg_mono.png")		// 読み込むテクスチャファイル名
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT MakeVertexResult(void);
+void SetDiffuseResult(int alpha);
+void SetDiffuseGameover(int alpha);
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 LPDIRECT3DTEXTURE9		g_pD3DTextureResult = NULL;			// テクスチャへのポインタ
-LPDIRECT3DTEXTURE9		g_pD3DTextureResultLogo = NULL;		// テクスチャへのポインタ
-LPDIRECT3DTEXTURE9		g_pD3DTextureResultImage = NULL;	// テクスチャへのポインタ
+LPDIRECT3DTEXTURE9		g_pD3DTextureGameover = NULL;		// テクスチャへのポインタ
 
 VERTEX_2D				g_vertexWkResult[NUM_VERTEX];		// 頂点情報格納ワーク
-VERTEX_2D				g_vertexWkResultImage[NUM_VERTEX];	// 頂点情報格納ワーク
-VERTEX_2D				g_vertexWkResultLogo[NUM_VERTEX];	// 頂点情報格納ワーク
+VERTEX_2D				g_vertexWkGameover[NUM_VERTEX];		// 頂点情報格納ワーク
 
 //=============================================================================
 // 初期化処理
@@ -50,17 +40,13 @@ HRESULT InitResult(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	
 	// テクスチャの読み込み
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_RESULT,				// ファイルの名前
-								&g_pD3DTextureResult);		// 読み込むメモリー
+	D3DXCreateTextureFromFile(pDevice,		// デバイスへのポインタ
+		TEXTURE_RESULT,						// ファイルの名前
+		&g_pD3DTextureResult);				// 読み込むメモリー
 
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_RESULT_LOGO,		// ファイルの名前
-								&g_pD3DTextureResultLogo);	// 読み込むメモリー
-	
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_RESULT_IMAGE,		// ファイルの名前
-								&g_pD3DTextureResultImage);	// 読み込むメモリー
+	D3DXCreateTextureFromFile(pDevice,		// デバイスへのポインタ
+		TEXTURE_GAMEOVER,					// ファイルの名前
+		&g_pD3DTextureGameover);			// 読み込むメモリー
 
 	// 頂点情報の作成
 	MakeVertexResult();
@@ -79,16 +65,10 @@ void UninitResult(void)
 		g_pD3DTextureResult = NULL;
 	}
 
-	if(g_pD3DTextureResultLogo != NULL)
+	if (g_pD3DTextureGameover != NULL)
 	{// テクスチャの開放
-		g_pD3DTextureResultLogo->Release();
-		g_pD3DTextureResultLogo = NULL;
-	}
-
-	if (g_pD3DTextureResultLogo != NULL)
-	{// テクスチャの開放
-		g_pD3DTextureResultLogo->Release();
-		g_pD3DTextureResultLogo = NULL;
+		g_pD3DTextureGameover->Release();
+		g_pD3DTextureGameover = NULL;
 	}
 }
 
@@ -97,9 +77,20 @@ void UninitResult(void)
 //=============================================================================
 void UpdateResult(void)
 {
+	PLAYER *player = GetPlayer();
+
 	if(IsAnyKeyTriggered() || IsAnyButtonTriggered(0))
 	{
 		SetFade(FADE_W_OUT, STAGE_REFRESH);
+	}
+
+	if (player->hp > 0)
+	{
+		SetDiffuseResult(255);
+	}
+	else
+	{
+		SetDiffuseGameover(255);
 	}
 }
 
@@ -120,16 +111,10 @@ void DrawResult(void)
 	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkResult, sizeof(VERTEX_2D));
 
 	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureResultImage);
+	pDevice->SetTexture(0, g_pD3DTextureGameover);
 
 	// ポリゴンの描画
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkResultImage, sizeof(VERTEX_2D));
-
-	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureResultLogo);
-
-	// ポリゴンの描画
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkResultLogo, sizeof(VERTEX_2D));
+	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkGameover, sizeof(VERTEX_2D));
 }
 
 //=============================================================================
@@ -150,10 +135,10 @@ HRESULT MakeVertexResult(void)
 	g_vertexWkResult[3].rhw = 1.0f;
 
 	// 反射光の設定
-	g_vertexWkResult[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResult[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResult[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResult[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkResult[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkResult[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkResult[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkResult[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
 
 	// テクスチャ座標の設定
 	g_vertexWkResult[0].tex = D3DXVECTOR2(0.0f, 0.0f);
@@ -161,54 +146,50 @@ HRESULT MakeVertexResult(void)
 	g_vertexWkResult[2].tex = D3DXVECTOR2(0.0f, 1.0f);
 	g_vertexWkResult[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
-	// 頂点座標の設定
-	g_vertexWkResultLogo[0].vtx = D3DXVECTOR3(RESULTLOGO_POS_X, RESULTLOGO_POS_Y, 0.0f);
-	g_vertexWkResultLogo[1].vtx = D3DXVECTOR3(RESULTLOGO_POS_X + RESULTLOGO_SIZE_X, RESULTLOGO_POS_Y, 0.0f);
-	g_vertexWkResultLogo[2].vtx = D3DXVECTOR3(RESULTLOGO_POS_X, RESULTLOGO_POS_Y + RESULTLOGO_SIZE_Y, 0.0f);
-	g_vertexWkResultLogo[3].vtx = D3DXVECTOR3(RESULTLOGO_POS_X + RESULTLOGO_SIZE_X, RESULTLOGO_POS_Y + RESULTLOGO_SIZE_Y, 0.0f);
-
-	// テクスチャのパースペクティブコレクト用
-	g_vertexWkResultLogo[0].rhw =
-	g_vertexWkResultLogo[1].rhw =
-	g_vertexWkResultLogo[2].rhw =
-	g_vertexWkResultLogo[3].rhw = 1.0f;
-
-	// 反射光の設定
-	g_vertexWkResultLogo[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultLogo[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultLogo[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultLogo[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-
-	// テクスチャ座標の設定
-	g_vertexWkResultLogo[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	g_vertexWkResultLogo[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-	g_vertexWkResultLogo[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-	g_vertexWkResultLogo[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
 	// 頂点座標の設定
-	g_vertexWkResultImage[0].vtx = D3DXVECTOR3(RESULTIMAGE_POS_X, RESULTIMAGE_POS_Y, 0.0f);
-	g_vertexWkResultImage[1].vtx = D3DXVECTOR3(RESULTIMAGE_POS_X + RESULTIMAGE_SIZE_X, RESULTIMAGE_POS_Y, 0.0f);
-	g_vertexWkResultImage[2].vtx = D3DXVECTOR3(RESULTIMAGE_POS_X, RESULTIMAGE_POS_Y + RESULTIMAGE_SIZE_Y, 0.0f);
-	g_vertexWkResultImage[3].vtx = D3DXVECTOR3(RESULTIMAGE_POS_X + RESULTIMAGE_SIZE_X, RESULTIMAGE_POS_Y + RESULTIMAGE_SIZE_Y, 0.0f);
+	g_vertexWkGameover[0].vtx = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_vertexWkGameover[1].vtx = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
+	g_vertexWkGameover[2].vtx = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
+	g_vertexWkGameover[3].vtx = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
 
 	// テクスチャのパースペクティブコレクト用
-	g_vertexWkResultImage[0].rhw =
-	g_vertexWkResultImage[1].rhw =
-	g_vertexWkResultImage[2].rhw =
-	g_vertexWkResultImage[3].rhw = 1.0f;
+	g_vertexWkGameover[0].rhw =
+	g_vertexWkGameover[1].rhw =
+	g_vertexWkGameover[2].rhw =
+	g_vertexWkGameover[3].rhw = 1.0f;
 
 	// 反射光の設定
-	g_vertexWkResultImage[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultImage[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultImage[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
-	g_vertexWkResultImage[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+	g_vertexWkGameover[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkGameover[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkGameover[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	g_vertexWkGameover[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
 
 	// テクスチャ座標の設定
-	g_vertexWkResultImage[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	g_vertexWkResultImage[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-	g_vertexWkResultImage[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-	g_vertexWkResultImage[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	g_vertexWkGameover[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	g_vertexWkGameover[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+	g_vertexWkGameover[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+	g_vertexWkGameover[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
 	return S_OK;
+}
+
+//=============================================================================
+// 反射光の設定
+//=============================================================================
+void SetDiffuseResult(int alpha)
+{
+	g_vertexWkResult[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkResult[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkResult[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkResult[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+}
+
+void SetDiffuseGameover(int alpha)
+{
+	g_vertexWkGameover[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkGameover[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkGameover[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
+	g_vertexWkGameover[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, alpha);
 }
 

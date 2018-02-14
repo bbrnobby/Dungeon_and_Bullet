@@ -8,6 +8,7 @@
 #include "title.h"
 #include "input.h"
 #include "sound.h"
+#include "font.h"
 #include "fade.h"
 #include "debugproc.h"
 
@@ -18,7 +19,7 @@
 #define	TEXTURE_TITLE_BG_MONO	_T("data/TEXTURE/TITLE/title_bg_mono.png")		// 読み込むテクスチャファイル名
 #define	TEXTURE_TITLE_BG_CHROMA	_T("data/TEXTURE/TITLE/title_bg_chroma.png")	// 読み込むテクスチャファイル名
 #define	TEXTURE_TITLE_CHROMA	_T("data/TEXTURE/TITLE/title_logo_chroma.png")	// 読み込むテクスチャファイル名
-#define	TEXTURE_TITLE_TEXT		_T("data/TEXTURE/TITLE/title_text.png")			// 読み込むテクスチャファイル名
+//#define	TEXTURE_TITLE_TEXT		_T("data/TEXTURE/TITLE/title_text.png")			// 読み込むテクスチャファイル名
 #define	TEXTURE_TITLE_VERSION	_T("data/TEXTURE/TITLE/title_version.png")		// 読み込むテクスチャファイル名
 #define TEXTURE_TITLE_HOLE		_T("data/TEXTURE/TITLE/title_bullethole.png")	// 読み込むテクスチャファイル名
 
@@ -59,7 +60,7 @@ LPDIRECT3DTEXTURE9	g_pD3DTextureTitleBGMono = NULL;		// テクスチャへのポインタ
 LPDIRECT3DTEXTURE9	g_pD3DTextureTitleBGChroma = NULL;		// テクスチャへのポインタ
 LPDIRECT3DTEXTURE9	g_pD3DTextureTitleHole = NULL;			// テクスチャへのポインタ
 LPDIRECT3DTEXTURE9	g_pD3DTextureTitleChroma = NULL;		// テクスチャへのポインタ
-LPDIRECT3DTEXTURE9	g_pD3DTextureTitleText = NULL;			// テクスチャへのポインタ
+//LPDIRECT3DTEXTURE9	g_pD3DTextureTitleText = NULL;			// テクスチャへのポインタ
 LPDIRECT3DTEXTURE9	g_pD3DTextureTitleVersion = NULL;		// テクスチャへのポインタ
 LPDIRECT3DTEXTURE9	g_pD3DTextureTitleLogo[LOGO_MAX] = {};	// テクスチャへのポインタ
 
@@ -68,7 +69,7 @@ VERTEX_2D		g_vertexWkTitleBGMono[NUM_VERTEX];			// 頂点情報格納ワーク
 VERTEX_2D		g_vertexWkTitleBGChroma[NUM_VERTEX];		// 頂点情報格納ワーク
 VERTEX_2D		g_vertexWkTitleHole[NUM_VERTEX];			// 頂点情報格納ワーク
 VERTEX_2D		g_vertexWkTitleChroma[NUM_VERTEX];			// 頂点情報格納ワーク
-VERTEX_2D		g_vertexWkTitleText[NUM_VERTEX];			// 頂点情報格納ワーク
+//VERTEX_2D		g_vertexWkTitleText[NUM_VERTEX];			// 頂点情報格納ワーク
 VERTEX_2D		g_vertexWkTitleVersion[NUM_VERTEX];			// 頂点情報格納ワーク
 VERTEX_2D		g_vertexWkTitleLogo[NUM_VERTEX * LOGO_MAX];	// 頂点情報格納ワーク
 
@@ -114,9 +115,9 @@ HRESULT InitTitle(int type)
 			TEXTURE_TITLE_CHROMA,				// ファイルの名前
 			&g_pD3DTextureTitleChroma);			// 読み込むメモリー
 
-		D3DXCreateTextureFromFile(pDevice,		// デバイスへのポインタ
-			TEXTURE_TITLE_TEXT,					// ファイルの名前
-			&g_pD3DTextureTitleText);			// 読み込むメモリー
+		//D3DXCreateTextureFromFile(pDevice,		// デバイスへのポインタ
+		//	TEXTURE_TITLE_TEXT,					// ファイルの名前
+		//	&g_pD3DTextureTitleText);			// 読み込むメモリー
 
 		D3DXCreateTextureFromFile(pDevice,		// デバイスへのポインタ
 			TEXTURE_TITLE_VERSION,				// ファイルの名前
@@ -182,11 +183,11 @@ void UninitTitle(void)
 		g_pD3DTextureTitleChroma = NULL;
 	}
 
-	if (g_pD3DTextureTitleText != NULL)
-	{	// テクスチャの開放
-		g_pD3DTextureTitleText->Release();
-		g_pD3DTextureTitleText = NULL;
-	}
+	//if (g_pD3DTextureTitleText != NULL)
+	//{	// テクスチャの開放
+	//	g_pD3DTextureTitleText->Release();
+	//	g_pD3DTextureTitleText = NULL;
+	//}
 
 	if (g_pD3DTextureTitleVersion != NULL)
 	{	// テクスチャの開放
@@ -382,11 +383,13 @@ void UpdateTitle(void)
 		g_rotTitle += 0.02f;
 		if (g_rotTitle > D3DX_PI * 2) g_rotTitle -= D3DX_PI * 2;
 
-		// 反射光の設定
-		g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
-		g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
-		g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
-		g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		//// 反射光の設定
+		//g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		//g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		//g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		//g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+
+		SetString("PRESS ANY KEY", SCREEN_CENTER_X, SCREEN_HEIGHT - TEXTURE_FONT_SIZE * 4, TEXTURE_FONT_SIZE, (int)(1 + cosf(g_rotTitle * 2)));
 
 		// 反射光の設定
 		g_vertexWkTitleChroma[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rotTitle)) / 2.0f));
@@ -412,8 +415,10 @@ void UpdateTitle(void)
 		}
 		break;
 	}
-	
+
+#ifdef _DEBUG
 	PrintDebugProc("TITLE_STATE:%d\n", g_stageState);
+#endif
 }
 
 //=============================================================================
@@ -462,11 +467,11 @@ void DrawTitle(void)
 	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkTitleChroma, sizeof(VERTEX_2D));
 
 
-	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureTitleText);
+	//// テクスチャの設定
+	//pDevice->SetTexture(0, g_pD3DTextureTitleText);
 
-	// ポリゴンの描画
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkTitleText, sizeof(VERTEX_2D));
+	//// ポリゴンの描画
+	//pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, NUM_POLYGON, g_vertexWkTitleText, sizeof(VERTEX_2D));
 
 
 	// テクスチャの設定
@@ -616,29 +621,29 @@ HRESULT MakeVertexTitle(void)
 	g_vertexWkTitleChroma[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
 
-	// 頂点座標の設定
-	g_vertexWkTitleText[0].vtx = D3DXVECTOR3(SCREEN_CENTER_X - 256, SCREEN_HEIGHT - 224, 0.0f);
-	g_vertexWkTitleText[1].vtx = D3DXVECTOR3(SCREEN_CENTER_X + 256, SCREEN_HEIGHT - 224, 0.0f);
-	g_vertexWkTitleText[2].vtx = D3DXVECTOR3(SCREEN_CENTER_X - 256, SCREEN_HEIGHT - 128, 0.0f);
-	g_vertexWkTitleText[3].vtx = D3DXVECTOR3(SCREEN_CENTER_X + 256, SCREEN_HEIGHT - 128, 0.0f);
+	//// 頂点座標の設定
+	//g_vertexWkTitleText[0].vtx = D3DXVECTOR3(SCREEN_CENTER_X - 256, SCREEN_HEIGHT - 224, 0.0f);
+	//g_vertexWkTitleText[1].vtx = D3DXVECTOR3(SCREEN_CENTER_X + 256, SCREEN_HEIGHT - 224, 0.0f);
+	//g_vertexWkTitleText[2].vtx = D3DXVECTOR3(SCREEN_CENTER_X - 256, SCREEN_HEIGHT - 128, 0.0f);
+	//g_vertexWkTitleText[3].vtx = D3DXVECTOR3(SCREEN_CENTER_X + 256, SCREEN_HEIGHT - 128, 0.0f);
 
-	// テクスチャのパースペクティブコレクト用
-	g_vertexWkTitleText[0].rhw =
-	g_vertexWkTitleText[1].rhw =
-	g_vertexWkTitleText[2].rhw =
-	g_vertexWkTitleText[3].rhw = 1.0f;
+	//// テクスチャのパースペクティブコレクト用
+	//g_vertexWkTitleText[0].rhw =
+	//g_vertexWkTitleText[1].rhw =
+	//g_vertexWkTitleText[2].rhw =
+	//g_vertexWkTitleText[3].rhw = 1.0f;
 
-	// 反射光の設定
-	g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
-	g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
-	g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
-	g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	//// 反射光の設定
+	//g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	//g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	//g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
+	//g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 0);
 
-	// テクスチャ座標の設定
-	g_vertexWkTitleText[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	g_vertexWkTitleText[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-	g_vertexWkTitleText[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-	g_vertexWkTitleText[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	//// テクスチャ座標の設定
+	//g_vertexWkTitleText[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	//g_vertexWkTitleText[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+	//g_vertexWkTitleText[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+	//g_vertexWkTitleText[3].tex = D3DXVECTOR2(1.0f, 1.0f);
 
 
 	// 頂点座標の設定

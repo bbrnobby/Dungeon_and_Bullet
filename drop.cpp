@@ -278,49 +278,49 @@ void PickDrop(DROP *drop)
 			switch (drop->type)
 			{
 			case DROP_COIN001:
-				SetString("どうのコイン　＋１０", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				SetString("どうか　１０バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
 				AddScore(10);
 				break;
 			case DROP_COIN002:
-				SetString("ぎんのコイン　＋5０", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				SetString("ぎんか　5０バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
 				AddScore(50);
 				break;
 			case DROP_COIN003:
-				SetString("きんのコイン　＋１0０", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				SetString("きんか　１0０バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
 				AddScore(100);
 				break;
 			//case DROP_PISTOL:
 			//case DROP_SHOTGUN:
 			//case DROP_LASERGUN:
 			//	return;
+			case DROP_JEWEL001:
+				SetString("サファイア　75バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(75);
+				break;
+			case DROP_JEWEL002:
+				SetString("エメラルド　85バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(85);
+				break;
+			case DROP_JEWEL003:
+				SetString("トパーズ　90バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(90);
+				break;
+			case DROP_JEWEL004:
+				SetString("ルビー　105バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(105);
+				break;
+			case DROP_JEWEL005:
+				SetString("ダイヤモンド　120バレ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(120);
+				break;
 			case DROP_MINIHEART:
 				SetString("ちいさいハート　たいりょく+1", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
 				if (player->hp < MAX_HP * (HEART_DIVIDE - 1)) player->hp++;
 				break;
 			case DROP_BIGHEART:
-				SetString("おおきいハート　たいりょく+１ゲージ", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				SetString("おおきいハート　たいりょく+3", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
 				player->hp += HEART_DIVIDE - 1;
 				if (player->hp > MAX_HP * (HEART_DIVIDE - 1)) player->hp = MAX_HP * (HEART_DIVIDE - 1);
-				break;
-			case DROP_JEWEL001:
-				SetString("サファイア　＋75", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(75);
-				break;
-			case DROP_JEWEL002:
-				SetString("エメラルド　＋85", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(85);
-				break;
-			case DROP_JEWEL003:
-				SetString("トパーズ　+90", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(90);
-				break;
-			case DROP_JEWEL004:
-				SetString("ルビー　＋105", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(105);
-				break;
-			case DROP_JEWEL005:
-				SetString("ダイヤモンド　＋120", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(120);
 				break;
 			case DROP_SLUG:
 				SetString("スラッグだん　ショットガン＋6", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);

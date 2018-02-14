@@ -203,11 +203,7 @@ void UpdatePlayer(void)
 			}
 
 			// ‘–‚é
-			if ((GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH
-				|| GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL
-				|| (GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))
-					&& GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))->clear))
-				&& (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B))) {
+			if (GetKeyboardPress(DIK_LCONTROL) || IsButtonPressed(0, BUTTON_B)) {
 				if (player->state == PLAYER_WALK)
 				{	// •à‚«ó‘Ô‚ÌŽžA‘–‚èƒ‚[ƒVƒ‡ƒ“‚É•Ï‰»
 					player->state = PLAYER_RUN;
@@ -274,7 +270,17 @@ void UpdatePlayer(void)
 				player->vec = player->vec / 4 * 3;
 				break;
 			case PLAYER_RUN:
-				player->vec = player->vec * 2;
+				if (GetMapByPos(player->pos.x, player->pos.y) == MAP_PATH
+					|| GetMapByPos(player->pos.x, player->pos.y) == MAP_TRAIL
+					|| (GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))
+						&& GetRoom(GetRoomIDByPos(player->pos.x, player->pos.y))->clear))
+				{
+					player->vec = player->vec * 2;
+				}
+				else
+				{
+					player->vec = player->vec * 1.25;
+				}
 				break;
 			}
 

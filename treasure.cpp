@@ -107,6 +107,7 @@ void UpdateTreasure(void)
 					treasure->vec = 0.0f;
 					treasure->PatternAnim = 0;
 					treasure->state = BOX_WAITING;
+
 					// テクスチャ座標を設定
 					SetTextureTreasure(i);
 				}
@@ -159,7 +160,6 @@ void UpdateTreasure(void)
 				}
 				break;
 			}
-
 
 			treasure->pos.y -= treasure->vec;
 

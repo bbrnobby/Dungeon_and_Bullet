@@ -232,7 +232,6 @@ void UpdateGun(void)
 		break;
 	case PLAYER_RUN:
 		gun->use = false;
-		gun->interval = gun->index = 1;
 		break;
 	}
 
@@ -467,18 +466,18 @@ void UpdateGun(void)
 	SetVertexGun();
 	SetTextureGun();
 
-	char string[15];
+	char str[16];
 	switch (gun->type)
 	{
 	case GUN_PISTOL:
-		sprintf(string, "PISTOL*?");
+		sprintf(str, "PISTOL*?");
 		break;
 	case GUN_SHOTGUN:
-		sprintf(string, "SHOTGUN*%-2d", gun->numSlug - gun->ammo);
+		sprintf(str, "SHOTGUN*%-2d", gun->numSlug - gun->ammo);
 		break;
 	}
 
-	SetString(string, POS_UI_WINDOW_X + TEXTURE_UI_GUN_SIZE / 2, POS_UI_WINDOW_Y + TEXTURE_UI_GUN_SIZE + TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE * 0.5, 1);
+	SetString(str, POS_UI_WINDOW_X + TEXTURE_UI_GUN_SIZE / 2, POS_UI_WINDOW_Y + TEXTURE_UI_GUN_SIZE + TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE * 0.5, 1);
 
 	if (gun->interval > 0)
 	{
@@ -856,11 +855,11 @@ void SetGun(int no)
 					if (gun->type == GUN_SHOTGUN)
 					{
 						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-						if (gun->subPos > 0)
+						if (gun->subRot > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 						}
-						else if (gun->subPos < 0)
+						else if (gun->subRot < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 						}
@@ -868,11 +867,11 @@ void SetGun(int no)
 					else
 					{
 						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
-						if (gun->subPos > 0)
+						if (gun->subRot > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
-						else if (gun->subPos < 0)
+						else if (gun->subRot < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
@@ -881,11 +880,11 @@ void SetGun(int no)
 				else
 				{
 					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-					if (gun->subPos > 0)
+					if (gun->subRot > 0)
 					{
 						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
-					else if (gun->subPos < 0)
+					else if (gun->subRot < 0)
 					{
 						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
@@ -917,12 +916,12 @@ void SetGun(int no)
 					if (gun->type == GUN_SHOTGUN)
 					{
 						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-						if (gun->subPos < 0)
+						if (gun->subRot < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
 						}
-						else if (gun->subPos > 0)
+						else if (gun->subRot > 0)
 						{
 							gun->subPos.y += TEXTURE_PLAYER_SIZE_Y / 8.0f;
 						}
@@ -930,11 +929,11 @@ void SetGun(int no)
 					else
 					{
 						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f * 3;
-						if (gun->subPos < 0)
+						if (gun->subRot < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
-						else if (gun->subPos > 0)
+						else if (gun->subRot > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
 							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
@@ -944,11 +943,11 @@ void SetGun(int no)
 				else
 				{
 					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-					if (gun->subPos < 0)
+					if (gun->subRot < 0)
 					{
 						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
-					else if (gun->subPos > 0)
+					else if (gun->subRot > 0)
 					{
 						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 8.0f;
@@ -1048,8 +1047,8 @@ void SetShot()
 			{
 				for (int i = 0; i < SLUG_MAX; i++)
 				{
-					float subPos = D3DX_PI * 0.166 * (rand() % 360) / 360 - D3DX_PI * 0.083;
-					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subPos, PLAYER_BULLET_SHOTGUN);
+					float subRot = D3DX_PI * 0.166 * (rand() % 360) / 360 - D3DX_PI * 0.083;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
 				}
 				gun->interval = gun->index = INT_SHOT_SHOTGUN / 1.5;
 			}
@@ -1057,8 +1056,8 @@ void SetShot()
 			{
 				for (int i = 0; i < SLUG_MAX; i++)
 				{
-					float subPos = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
-					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subPos, PLAYER_BULLET_SHOTGUN);
+					float subRot = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
 				}
 				gun->interval = gun->index = INT_SHOT_SHOTGUN;
 			}

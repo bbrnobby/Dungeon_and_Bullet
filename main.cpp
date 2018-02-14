@@ -19,7 +19,7 @@
 #include "fade.h"
 #include "result.h"
 #include "score.h"
-#include "resultScore.h"
+#include "resultDrops.h"
 #include "font.h"
 #include "dungeon.h"
 #include "sound.h"
@@ -63,16 +63,16 @@ void UpdateDebugFont(void);
 LPDIRECT3D9				g_pD3D = NULL;				// Direct3Dオブジェクト
 LPDIRECT3DDEVICE9		g_pD3DDevice = NULL;		// Deviceオブジェクト(描画に必要)
 
-D3DPRESENT_PARAMETERS	d3dpp;
+int						g_nStage = 0;				// ステージ番号
+LPDIRECTSOUNDBUFFER8	g_pBGM;						// BGM用バッファ
+
+D3DPRESENT_PARAMETERS	d3dpp;						// デバイス用
 
 #ifdef _DEBUG
 bool					g_bDispDebug = true;		// デバッグ表示
 int						g_nCountFPS;				// FPSカウンタ
 #endif
 
-int						g_nStage = 0;				// ステージ番号
-
-LPDIRECTSOUNDBUFFER8	g_pBGM;						// BGM用バッファ
 
 //=============================================================================
 // メイン関数
@@ -235,65 +235,6 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 		return E_FAIL;
 	}
 
-	//// デバイスのプレゼンテーションパラメータの設定
-	//ZeroMemory(&d3dpp, sizeof(d3dpp));							// ワークをゼロクリア
-	//d3dpp.BackBufferCount			= 1;						// バックバッファの数
-	//d3dpp.BackBufferWidth			= SCREEN_WIDTH;				// ゲーム画面サイズ(幅)
-	//d3dpp.BackBufferHeight			= SCREEN_HEIGHT;			// ゲーム画面サイズ(高さ)
-	//d3dpp.BackBufferFormat			= D3DFMT_UNKNOWN;			// バックバッファのフォーマットは現在設定されているものを使う
-	//d3dpp.SwapEffect				= D3DSWAPEFFECT_DISCARD;	// 映像信号に同期してフリップする
-	//d3dpp.Windowed					= bWindow;					// ウィンドウモード
-	//d3dpp.EnableAutoDepthStencil	= TRUE;						// デプスバッファ（Ｚバッファ）とステンシルバッファを作成
-	//d3dpp.AutoDepthStencilFormat	= D3DFMT_D16;				// デプスバッファとして16bitを使う
-	//d3dpp.BackBufferFormat			= d3ddm.Format;				// カラーモードの指定
-
-	//if(bWindow)
-	//{// ウィンドウモード
-	//	d3dpp.BackBufferFormat           = D3DFMT_UNKNOWN;					// バックバッファ
-	//	d3dpp.FullScreen_RefreshRateInHz = 0;								// リフレッシュレート
-	//	d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;	// インターバル
-	//}
-	//else
-	//{// フルスクリーンモード
-	//	d3dpp.BackBufferFormat           = D3DFMT_R5G6B5;					// バックバッファ
-	//	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;			// リフレッシュレート
-	//	d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;		// インターバル
-	//}
-
-	//// デバイスの生成
-	//// ディスプレイアダプタを表すためのデバイスを作成
-	//// 描画と頂点処理をハードウェアで行なう
-	//if(FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT,							// ディスプレイアダプタ
-	//								D3DDEVTYPE_HAL,								// ディスプレイタイプ
-	//								hWnd,										// フォーカスするウインドウへのハンドル
-	//								D3DCREATE_HARDWARE_VERTEXPROCESSING,		// デバイス作成制御の組み合わせ
-	//								&d3dpp,										// デバイスのプレゼンテーションパラメータ
-	//								&g_pD3DDevice)))							// デバイスインターフェースへのポインタ
-	//{
-	//	// 上記の設定が失敗したら
-	//	// 描画をハードウェアで行い、頂点処理はCPUで行なう
-	//	if(FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, 
-	//									D3DDEVTYPE_HAL, 
-	//									hWnd, 
-	//									D3DCREATE_SOFTWARE_VERTEXPROCESSING, 
-	//									&d3dpp,
-	//									&g_pD3DDevice)))
-	//	{
-	//		// 上記の設定が失敗したら
-	//		// 描画と頂点処理をCPUで行なう
-	//		if(FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, 
-	//										D3DDEVTYPE_REF,
-	//										hWnd, 
-	//										D3DCREATE_SOFTWARE_VERTEXPROCESSING, 
-	//										&d3dpp,
-	//										&g_pD3DDevice)))
-	//		{
-	//			// 初期化失敗
-	//			return E_FAIL;
-	//		}
-	//	}
-	//}
-
 	// デバイスのプレゼンテーションパラメータの設定
 	ZeroMemory(&d3dpp, sizeof(d3dpp));				// ワークをゼロクリア
 	d3dpp.BackBufferCount = 1;						// バックバッファの数
@@ -398,8 +339,10 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	InitResult();
 
 	// スコア初期化
-	InitScore(0);
-	InitResultScore(0);
+	InitScore();
+
+	// リザルトドロップ初期化
+	InitResultDrops(0);
 
 	// フォント初期化
 	InitFont(0);
@@ -527,6 +470,18 @@ void Update(void)
 		g_bDispDebug = g_bDispDebug ? false : true;
 	}
 
+	// リセット
+	if (GetKeyboardTrigger(DIK_F2))
+	{
+		SetFade(FADE_W_OUT, STAGE_REFRESH);
+	}
+
+	// リザルト
+	if (GetKeyboardTrigger(DIK_F3))
+	{
+		SetFade(FADE_W_OUT, STAGE_GAME_END);
+	}
+
 	UpdateDebugFont();
 #endif
 
@@ -572,7 +527,7 @@ void Update(void)
 		UpdateDungeon();
 
 		// スコアの更新処理
-		UpdateScore();
+		UpdateScore(0);
 
 		// フォントの更新処理
 		UpdateFont();
@@ -589,30 +544,22 @@ void Update(void)
 		// 当たり判定
 		CheckHit();
 
-		// リセット
-		if (GetKeyboardTrigger(DIK_Q))
-		{
-			SetFade(FADE_W_OUT, STAGE_REFRESH);
-		}
 		break;
 
 	case STAGE_GAME_END:
 		SetStage(STAGE_RESULT);
+		InitFont(1);
 		break;
 	
 	case STAGE_RESULT:
-		UpdateResultScore();
+		UpdateResultDrops();
 		UpdateResult();
+		UpdateScore(1);
 		UpdateFont();
 		break;
 		
 	case STAGE_RESET:
-		InitGame();				// ゲームの再初期化処理
-		SetString("-ミッション-", SCREEN_CENTER_X, SCREEN_CENTER_Y - TEXTURE_FONT_SIZE * 2, TEXTURE_FONT_SIZE * 2, MESSAGE_INTERVAL);
-		SetString("かいだんを　さがせ", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE, TEXTURE_FONT_SIZE, MESSAGE_INTERVAL);
-		SetString("たいりょく", HEART_POS_X + TEXTURE_HEART_SIZE_X * MAX_HP / 1.9f, HEART_POS_Y - TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE, -1);
-		//SetString("スコア", SCORE_POS_X + SCORE_DIGIT * TEXTURE_SCORE_SIZE_X / 2.0f, SCORE_POS_Y - TEXTURE_FONT_SIZE / 2.0f, TEXTURE_FONT_SIZE, -1);
-		//SetString("SELECTでサイズへんこう", MINIMAP_POS_X + MINIMAP_SIZE_SMALL * MAP_WIDTH, MINIMAP_POS_Y - TEXTURE_FONT_SIZE * 0.5f, TEXTURE_FONT_SIZE * 0.5, -1);
+		InitGame();	
 		SetStage(STAGE_GAME);
 		break;
 
@@ -721,7 +668,9 @@ void Draw(void)
 			// リザルトの描画処理
 			DrawResult();
 			// スコアの描画処理
-			DrawResultScore();
+			DrawResultDrops();
+			// フォントの描画処理
+			DrawFont();
 			break;
 		}
 
@@ -1063,8 +1012,8 @@ void InitGame(void)
 	InitGun(1);			// 銃の再初期化
 	InitBullet(1);		// バレットの再初期化
 	InitBG(1);			// BGの再初期化
-	InitScore(1);		// スコアの再初期化
-	InitResultScore(1);	// リザルトスコアの再初期化
+	InitScore();		// スコアの再初期化
+	InitResultDrops(1);	// リザルトスコアの再初期化
 	InitFont(1);		// フォントの再初期化
 	InitDungeon(1);		// ダンジョンの再初期化
 	InitEnemy(1);		// エネミーの再初期化
@@ -1073,6 +1022,10 @@ void InitGame(void)
 	InitDrop(1);		// ドロップの再初期化
 	InitParticle(1);	// パーティクルの再初期化
 	InitMiniMap();		// ミニマップの再初期化
+
+	SetString("-ミッション-", SCREEN_CENTER_X, SCREEN_CENTER_Y - TEXTURE_FONT_SIZE * 2, TEXTURE_FONT_SIZE * 2, MESSAGE_INTERVAL);
+	SetString("かいだんを　さがせ", SCREEN_CENTER_X, SCREEN_CENTER_Y + TEXTURE_FONT_SIZE, TEXTURE_FONT_SIZE, MESSAGE_INTERVAL);
+	SetString("たいりょく", HEART_POS_X + TEXTURE_HEART_SIZE_X * MAX_HP / 1.9f, HEART_POS_Y - TEXTURE_FONT_SIZE * 0.5, TEXTURE_FONT_SIZE, -1);
 
 	// サウンドのロードと再生
 	g_pBGM = LoadSound(BGM_MAZE);

@@ -269,8 +269,8 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 			{
 				index = 209;
 			}
-			// 「！」
-			else if (*buf == 73)
+			// 「：」
+			else if (*buf == 70)
 			{
 				index = 178;
 			}
@@ -320,8 +320,8 @@ void SetString(char *string, float posX, float posY, int size, int interval)
 		{
 			index = 209;
 		}
-		// 「!」
-		else if (*buf == 33)
+		// 「:」
+		else if (*buf == 58)
 		{
 			index = 178;
 		}

@@ -197,10 +197,13 @@ bool IsPlaying( LPDIRECTSOUNDBUFFER8 pBuffer )
 {
 	DWORD status;
 
-	pBuffer->GetStatus(&status);
-	if( status & DSBSTATUS_PLAYING )
+	if (pBuffer)
 	{
-		return true;
+		pBuffer->GetStatus(&status);
+		if (status & DSBSTATUS_PLAYING)
+		{
+			return true;
+		}
 	}
 	return false;
 }

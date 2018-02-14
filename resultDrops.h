@@ -1,11 +1,11 @@
 //=============================================================================
 //
-// リザルトスコア処理 [resultScore.h]
+// リザルトドロップ処理 [resultDrops.h]
 // Author : GP11A243 06 楳田健斗
 //
 //=============================================================================
-#ifndef _RESULTSCORE_H_
-#define _RESULTSCORE_H_
+#ifndef _RESULTDROPS_H_
+#define _RESULTDROPS_H_
 
 #include "main.h"
 #include "score.h"
@@ -17,11 +17,11 @@
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-HRESULT InitResultScore(int type);
-void UninitResultScore(void);
-void UpdateResultScore(void);
-void DrawResultScore(void);
+HRESULT InitResultDrops(int type);
+void UninitResultDrops(void);
+void UpdateResultDrops(void);
+void DrawResultDrops(void);
 
-void SetResultScoreArea(float x, float y, float sizeX, float sizeY);
+void SetResultDropsArea(float x, float y, float sizeX, float sizeY);
 
 #endif
