@@ -6,7 +6,7 @@
 //=============================================================================
 #include "main.h"
 #include "score.h"
-#include <stdio.h>
+#include "camera.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -26,12 +26,12 @@ void SetVertexScore(void);
 LPDIRECT3DTEXTURE9		g_pD3DTextureScore = NULL;		// テクスチャへのポリゴン
 VERTEX_2D				g_vertexWkScore[SCORE_DIGIT][NUM_VERTEX];	// 頂点情報格納ワーク
 
-D3DXVECTOR3				g_posScore;						// ポリゴンの移動量
-D3DXVECTOR3				g_sizeScore;
+D3DXVECTOR3				g_posScore;						// スコアの座標
+D3DXVECTOR3				g_sizeScore;					// スコアのサイズ
 
-int						g_nScore;
-int						g_nSymbolScore;						// スコア
-int						g_addPoint;
+int						g_nScore;						// スコア
+int						g_nSymbolScore;					// スコア（表示用）
+int						g_addPoint;						// 加算ポイント
 
 //=============================================================================
 // 初期化処理
@@ -180,21 +180,30 @@ void SetTextureScore(void)
 
 void SetVertexScore(void)
 {
+	D3DXVECTOR3 *subPosCamera = GetSubPosCamera();
+
 	for (int i = 0; i < SCORE_DIGIT; i++)
 	{
 		// 頂点座標の設定
 		g_vertexWkScore[i][0].vtx.x = g_sizeScore.x * (SCORE_DIGIT - i - 1) + g_posScore.x;
 		g_vertexWkScore[i][0].vtx.y = g_posScore.y;
 		g_vertexWkScore[i][0].vtx.z = 0.0f;
+		g_vertexWkScore[i][0].vtx += *subPosCamera;
+
 		g_vertexWkScore[i][1].vtx.x = g_sizeScore.x * (SCORE_DIGIT - i - 1) + g_posScore.x + g_sizeScore.x;
 		g_vertexWkScore[i][1].vtx.y = g_posScore.y;
 		g_vertexWkScore[i][1].vtx.z = 0.0f;
+		g_vertexWkScore[i][1].vtx += *subPosCamera;
+
 		g_vertexWkScore[i][2].vtx.x = g_sizeScore.x * (SCORE_DIGIT - i - 1) + g_posScore.x;
 		g_vertexWkScore[i][2].vtx.y = g_posScore.y + g_sizeScore.y;
 		g_vertexWkScore[i][2].vtx.z = 0.0f;
+		g_vertexWkScore[i][2].vtx += *subPosCamera;
+
 		g_vertexWkScore[i][3].vtx.x = g_sizeScore.x * (SCORE_DIGIT - i - 1) + g_posScore.x + g_sizeScore.x;
 		g_vertexWkScore[i][3].vtx.y = g_posScore.y + g_sizeScore.y;
 		g_vertexWkScore[i][3].vtx.z = 0.0f;
+		g_vertexWkScore[i][3].vtx += *subPosCamera;
 	}
 }
 

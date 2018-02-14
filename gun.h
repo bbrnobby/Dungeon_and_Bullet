@@ -98,4 +98,6 @@ void DrawGun(void);			// •`‰æˆ—
 GUN *GetGun();				// e‚Ìæ“¾
 void SetGun(int no);		// e‚Ìİ’è
 void SetShot();				// e‚Ì”­Ë
+void GetSlug(void);			// ’e‚ÌE“¾
+
 #endif

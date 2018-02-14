@@ -222,7 +222,7 @@ void SetTextureBullet( int no, int cntPattern )
 void SetVertexBullet( int no )
 {
 	BULLET *bullet = &bulletWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// ’¸“_À•W‚Ìİ’è
 	bullet->vertexWk[0].vtx.x = bullet->pos.x + posCamera->x - cosf(bullet->BaseAngle + bullet->rot.z) * bullet->Radius;

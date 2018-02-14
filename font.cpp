@@ -5,6 +5,7 @@
 //
 //=============================================================================
 #include "font.h"
+#include "camera.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -176,23 +177,28 @@ void SetTextureFont(int no)
 void SetVertexFont(int no)
 {
 	FONT *font = &fontWk[no];
+	D3DXVECTOR3 *subPosCamera = GetSubPosCamera();
 
 	// 頂点座標の設定
 	font->vertexWk[0].vtx.x = font->pos.x;
 	font->vertexWk[0].vtx.y = font->pos.y;
 	font->vertexWk[0].vtx.z = 0.0f;
+	font->vertexWk[0].vtx += *subPosCamera;
 
 	font->vertexWk[1].vtx.x = font->pos.x + font->size * 0.75f;
 	font->vertexWk[1].vtx.y = font->pos.y;
 	font->vertexWk[1].vtx.z = 0.0f;
+	font->vertexWk[1].vtx += *subPosCamera;
 
 	font->vertexWk[2].vtx.x = font->pos.x;
 	font->vertexWk[2].vtx.y = font->pos.y + font->size;
 	font->vertexWk[2].vtx.z = 0.0f;
+	font->vertexWk[2].vtx += *subPosCamera;
 
 	font->vertexWk[3].vtx.x = font->pos.x + font->size * 0.75f;
 	font->vertexWk[3].vtx.y = font->pos.y + font->size;
 	font->vertexWk[3].vtx.z = 0.0f;
+	font->vertexWk[3].vtx += *subPosCamera;
 }
 
 void SetString(char *string, float posX, float posY, int size, int interval)

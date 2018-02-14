@@ -11,6 +11,7 @@
 #include "pointer.h"
 #include "particle.h"
 #include "debugproc.h"
+#include "drop.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -328,7 +329,7 @@ void SetTextureEnemy( int no, int cntPattern )
 void SetVertexEnemy( int no )
 {
 	ENEMY *enemy = &enemyWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// 頂点座標の設定
 	enemy->vertexWk[0].vtx.x = enemy->pos.x + posCamera->x - cosf(enemy->BaseAngle + enemy->rot.z) * enemy->Radius;
@@ -568,6 +569,18 @@ void SetState(ENEMY *enemy, int state)
 			break;
 		case ENEMY_DEAD:
 			enemy->interval = ENEMY_INTERVAL_DEAD;
+			switch(rand() % 8)
+			{
+			case 0:
+				SetDrop(enemy->pos.x, enemy->pos.y, DROP_SLUG, 0);
+				break;
+			case 1:
+				SetDrop(enemy->pos.x, enemy->pos.y, DROP_MINIHEART, 0);
+				break;
+			case 2:
+				SetDrop(enemy->pos.x, enemy->pos.y, DROP_COIN001, 0);
+				break;
+			}
 			break;
 		case ENEMY_SPAWN:
 			if (enemy->state == ENEMY_DESPAWN) break;

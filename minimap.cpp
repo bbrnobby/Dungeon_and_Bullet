@@ -183,6 +183,8 @@ HRESULT MakeVertexMiniMap(void)
 //=============================================================================
 void SetVertexMiniMap(void)
 {
+	D3DXVECTOR3 *subPosCamera = GetSubPosCamera();
+
 	for (int i = 0; i < MAP_WIDTH; i++)
 	{
 		for (int j = 0; j < MAP_HEIGHT; j++)
@@ -191,22 +193,22 @@ void SetVertexMiniMap(void)
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.x = g_scaleMiniMap * i;
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.y = g_scaleMiniMap * j;
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][0].vtx += g_posMiniMap + *subPosCamera;
 
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.x = g_scaleMiniMap * (i + 1);
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.y = g_scaleMiniMap * j;
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][1].vtx += g_posMiniMap + *subPosCamera;
 
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.x = g_scaleMiniMap * i;
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.y = g_scaleMiniMap * (j + 1);
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][2].vtx += g_posMiniMap + *subPosCamera;
 
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.x = g_scaleMiniMap * (i + 1);
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.y = g_scaleMiniMap * (j + 1);
 			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx.z = 0.0f;
-			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx += g_posMiniMap;
+			g_vertexWkMiniMap[MAP_HEIGHT * i + j][3].vtx += g_posMiniMap + *subPosCamera;
 		}
 	}
 }

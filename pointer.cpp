@@ -93,7 +93,7 @@ void UpdatePointer(void)
 	POINTER *pointer = pointerWk;		// ポインターのポインターを初期化
 	PLAYER *player = GetPlayer();
 	ENEMY *enemy;
-	D3DXVECTOR3 cameraPos = *GetCameraPos();
+	D3DXVECTOR3 cameraPos = *GetPosCamera();
 
 	int fade;
 
@@ -222,7 +222,7 @@ void SetTexturePointer(int no, int cntPattern)
 void SetVertexPointer(int no)
 {
 	POINTER *pointer = &pointerWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// 頂点座標の設定
 	pointer->vertexWk[0].vtx.x = pointer->pos.x + posCamera->x - cosf(pointer->BaseAngle + pointer->rot.z) * pointer->Radius;

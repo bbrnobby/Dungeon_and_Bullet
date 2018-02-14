@@ -207,7 +207,7 @@ HRESULT MakeVertexParticle(int no)
 void SetVertexParticle(int no)
 {
 	PARTICLE *particle = &particleWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// ’¸“_À•W‚ÌÝ’è
 	particle->vertexWk[0].vtx.x = -particle->scale.x / 2 + particle->pos.x + posCamera->x;

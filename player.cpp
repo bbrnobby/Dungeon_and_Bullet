@@ -429,7 +429,7 @@ void SetTexturePlayer( int cntPattern )
 void SetVertexPlayer(void)
 {
 	PLAYER *player = &playerWk;
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 	
 	// ’¸“_À•W‚ÌÝ’è
 	player->vertexWk[0].vtx.x = (int)(posCamera->x - cosf(player->BaseAngle + player->rot.z) * player->Radius);
@@ -508,8 +508,9 @@ void KnockBackPlayer(PLAYER *player, float rotZ)
 	player->subVec.y += PLAYER_KNOCKBACK_SPEED * sinf(rotZ);
 }
 
-void SetInvincible(PLAYER *player)
+void SetDamage(PLAYER *player)
 {
 	player->invincible = true;
 	player->interval = PLAYER_INTERVAL_INVINCIBLE;
+	SetShakeCamera();
 }

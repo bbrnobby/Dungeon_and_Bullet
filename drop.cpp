@@ -10,11 +10,12 @@
 #include "font.h"
 #include "heart.h"
 #include "camera.h"
+#include "gun.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-
+#define TEXTURE_GAME_DROP	_T("data/TEXTURE/drop001.png")	// 画像
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -27,10 +28,10 @@ void SetVertexDrop(int no);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-LPDIRECT3DTEXTURE9	g_pD3DTextureDrop = NULL;				// テクスチャへのポリゴン
+LPDIRECT3DTEXTURE9	g_pD3DTextureDrop = NULL;	// テクスチャへのポリゴン
 
-DROP				dropWk[MAX_DROP];						// ドロップ構造体
-int					mesDrop[MAX_DROP];
+DROP				dropWk[MAX_DROP];			// ドロップ構造体
+int					mesDrop[MAX_DROP];			// メッセージの位置
 
 //=============================================================================
 // 初期化処理
@@ -101,15 +102,17 @@ void UpdateDrop(void)
 		if (drop->use)			
 		{
 			drop->height += drop->subVec;
+			drop->rot.z += drop->vecRot;
 			if (drop->height <= 0)
 			{
 				drop->height = 0.0f;
 				drop->subVec = 0.0f;
+				drop->rot.z = 0.0f;
 			}
 			else
 			{
 				drop->pos += drop->vec;
-				//drop->rot.z = 0.25f;
+				drop->vecRot -= 0.01f;
 				drop->subVec -= 0.5f;
 			}
 			drop->pos.y -= drop->subVec;
@@ -206,7 +209,7 @@ void SetTextureDrop(int no)
 void SetVertexDrop(int no)
 {
 	DROP *drop = &dropWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// 頂点座標の設定
 	drop->vertexWk[0].vtx.x = drop->pos.x + posCamera->x - cosf(drop->BaseAngle + drop->rot.z) * drop->Radius;
@@ -245,19 +248,12 @@ void SetDrop(float posX, float posY, int type, int size)
 			drop->pos.y = posY;
 			drop->vec.x = size * cosf(theta / 180.0f * D3DX_PI);
 			drop->vec.y = size * sinf(theta / 180.0f * D3DX_PI);
+			drop->vecRot = 0.50f;
 			drop->subVec = 10.0f;
 			drop->height = 5.0f;
-			drop->type = type;									// アニメカウントを初期化
-
-			//if (drop->type >= DROP_PISTOL && drop->type <= DROP_BIGHEART)
-			//{
-			//	drop->size = TEXTURE_DROP_SIZE;
-			//}
-			//else
-			{
-				drop->size = TEXTURE_DROP_SIZE / 4 * 3;
-			}
-
+			drop->type = type;
+			drop->size = TEXTURE_DROP_SIZE;
+			
 			drop->pos.y -= drop->subVec;
 
 			D3DXVECTOR2 temp = D3DXVECTOR2(drop->size, drop->size);
@@ -275,10 +271,6 @@ void SetDrop(float posX, float posY, int type, int size)
 void PickDrop(DROP *drop)
 {
 	PLAYER *player = GetPlayer();
-	//if (drop->type >= DROP_PISTOL && drop->type <= DROP_LASERGUN)
-	//{
-	//	SetString("みじっそうです　ごめんね", SCREEN_CENTER_X, SCREEN_CENTER_Y, DROP_MES_SIZE, 1);
-	//}
 	for (int i = 0; i < MAX_DROP; i++)
 	{
 		if (mesDrop[i] == 0)
@@ -311,24 +303,28 @@ void PickDrop(DROP *drop)
 				if (player->hp > MAX_HP * (HEART_DIVIDE - 1)) player->hp = MAX_HP * (HEART_DIVIDE - 1);
 				break;
 			case DROP_JEWEL001:
-				SetString("サファイア　＋150", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(150);
+				SetString("サファイア　＋75", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(75);
 				break;
 			case DROP_JEWEL002:
-				SetString("エメラルド　＋200", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(200);
+				SetString("エメラルド　＋85", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(85);
 				break;
 			case DROP_JEWEL003:
-				SetString("トパーズ　+250", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(250);
+				SetString("トパーズ　+90", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(90);
 				break;
 			case DROP_JEWEL004:
-				SetString("ルビー　＋300", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(300);
+				SetString("ルビー　＋105", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(105);
 				break;
 			case DROP_JEWEL005:
-				SetString("ダイヤモンド　＋500", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
-				AddScore(500);
+				SetString("ダイヤモンド　＋120", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				AddScore(120);
+				break;
+			case DROP_SLUG:
+				SetString("スラッグだん　ショットガン＋6", SCREEN_CENTER_X, DROP_MES_SIZE * (i + 1), DROP_MES_SIZE, DROP_MES_INTERVVAL);
+				GetSlug();
 				break;
 			}
 			mesDrop[i] = DROP_MES_INTERVVAL;

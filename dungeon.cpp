@@ -271,7 +271,7 @@ void SetTextureExit(void)
 void SetVertexDungeon(void)
 {
 	PLAYER *player = GetPlayer();
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	for (int i = 0; i < MAP_WIDTH; i++)
 	{

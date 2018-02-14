@@ -474,7 +474,7 @@ void UpdateGun(void)
 		sprintf(string, "PISTOL*?");
 		break;
 	case GUN_SHOTGUN:
-		sprintf(string, "SHOTGUN*%-2d", gun->numSlug);
+		sprintf(string, "SHOTGUN*%-2d", gun->numSlug - gun->ammo);
 		break;
 	}
 
@@ -681,7 +681,8 @@ void SetVertexGun(void)
 	UI_WINDOW *uiWin = &uiWinWk;
 	UI_BULLET *uiBullet = uiBulletWk;
 	PLAYER *player = GetPlayer();
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
+	D3DXVECTOR3 *subPosCamera = GetSubPosCamera();
 
 	// 頂点座標の設定
 	if (player->dir == DIR_LEFT)
@@ -730,35 +731,43 @@ void SetVertexGun(void)
 	uiGun->vertexWk[0].vtx.x = uiGun->pos.x;
 	uiGun->vertexWk[0].vtx.y = uiGun->pos.y;
 	uiGun->vertexWk[0].vtx.z = 0.0f;
+	uiGun->vertexWk[0].vtx += *subPosCamera;
 
 	uiGun->vertexWk[1].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
 	uiGun->vertexWk[1].vtx.y = uiGun->pos.y;
 	uiGun->vertexWk[1].vtx.z = 0.0f;
+	uiGun->vertexWk[1].vtx += *subPosCamera;
 
 	uiGun->vertexWk[2].vtx.x = uiGun->pos.x;
 	uiGun->vertexWk[2].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
 	uiGun->vertexWk[2].vtx.z = 0.0f;
+	uiGun->vertexWk[2].vtx += *subPosCamera;
 
 	uiGun->vertexWk[3].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
 	uiGun->vertexWk[3].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
 	uiGun->vertexWk[3].vtx.z = 0.0f;
+	uiGun->vertexWk[3].vtx += *subPosCamera;
 
 	// 頂点座標の設定
 	uiWin->vertexWk[0].vtx.x = uiWin->pos.x;
 	uiWin->vertexWk[0].vtx.y = uiWin->pos.y;
 	uiWin->vertexWk[0].vtx.z = 0.0f;
+	uiWin->vertexWk[0].vtx += *subPosCamera;
 
 	uiWin->vertexWk[1].vtx.x = uiWin->pos.x + TEXTURE_UI_WIN_SIZE;
 	uiWin->vertexWk[1].vtx.y = uiWin->pos.y;
 	uiWin->vertexWk[1].vtx.z = 0.0f;
+	uiWin->vertexWk[1].vtx += *subPosCamera;
 
 	uiWin->vertexWk[2].vtx.x = uiWin->pos.x;
 	uiWin->vertexWk[2].vtx.y = uiWin->pos.y + TEXTURE_UI_WIN_SIZE;
 	uiWin->vertexWk[2].vtx.z = 0.0f;
+	uiWin->vertexWk[2].vtx += *subPosCamera;
 
 	uiWin->vertexWk[3].vtx.x = uiWin->pos.x + TEXTURE_UI_WIN_SIZE;
 	uiWin->vertexWk[3].vtx.y = uiWin->pos.y + TEXTURE_UI_WIN_SIZE;
 	uiWin->vertexWk[3].vtx.z = 0.0f;
+	uiWin->vertexWk[3].vtx += *subPosCamera;
 
 	for (int i = 0; i < MAG_MAX; i++, uiBullet++)
 	{
@@ -766,36 +775,44 @@ void SetVertexGun(void)
 		uiBullet->vertexWk[0].vtx.x = uiBullet->pos.x - cosf(uiBullet->BaseAngle + uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[0].vtx.y = uiBullet->pos.y - sinf(uiBullet->BaseAngle + uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[0].vtx.z = 0.0f;
+		uiBullet->vertexWk[0].vtx += *subPosCamera;
 
 		uiBullet->vertexWk[1].vtx.x = uiBullet->pos.x + cosf(uiBullet->BaseAngle - uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[1].vtx.y = uiBullet->pos.y - sinf(uiBullet->BaseAngle - uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[1].vtx.z = 0.0f;
+		uiBullet->vertexWk[1].vtx += *subPosCamera;
 
 		uiBullet->vertexWk[2].vtx.x = uiBullet->pos.x - cosf(uiBullet->BaseAngle - uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[2].vtx.y = uiBullet->pos.y + sinf(uiBullet->BaseAngle - uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[2].vtx.z = 0.0f;
+		uiBullet->vertexWk[2].vtx += *subPosCamera;
 
 		uiBullet->vertexWk[3].vtx.x = uiBullet->pos.x + cosf(uiBullet->BaseAngle + uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[3].vtx.y = uiBullet->pos.y + sinf(uiBullet->BaseAngle + uiBullet->rot.z) * uiBullet->Radius;
 		uiBullet->vertexWk[3].vtx.z = 0.0f;
+		uiBullet->vertexWk[3].vtx += *subPosCamera;
 	}
 
 	// 頂点座標の設定
 	g_vertexWkOverlay[0].vtx.x = uiGun->pos.x;
 	g_vertexWkOverlay[0].vtx.y = uiGun->pos.y + (TEXTURE_UI_GUN_SIZE * (1.0 - (float)gun->interval / gun->index));
 	g_vertexWkOverlay[0].vtx.z = 0.0f;
+	g_vertexWkOverlay[0].vtx += *subPosCamera;
 
 	g_vertexWkOverlay[1].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
 	g_vertexWkOverlay[1].vtx.y = uiGun->pos.y + (TEXTURE_UI_GUN_SIZE * (1.0 - (float)gun->interval / gun->index));
 	g_vertexWkOverlay[1].vtx.z = 0.0f;
+	g_vertexWkOverlay[1].vtx += *subPosCamera;
 
 	g_vertexWkOverlay[2].vtx.x = uiGun->pos.x;
 	g_vertexWkOverlay[2].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
 	g_vertexWkOverlay[2].vtx.z = 0.0f;
+	g_vertexWkOverlay[2].vtx += *subPosCamera;
 
 	g_vertexWkOverlay[3].vtx.x = uiGun->pos.x + TEXTURE_UI_GUN_SIZE;
 	g_vertexWkOverlay[3].vtx.y = uiGun->pos.y + TEXTURE_UI_GUN_SIZE;
 	g_vertexWkOverlay[3].vtx.z = 0.0f;
+	g_vertexWkOverlay[3].vtx += *subPosCamera;
 }
 
 //=============================================================================
@@ -839,11 +856,11 @@ void SetGun(int no)
 					if (gun->type == GUN_SHOTGUN)
 					{
 						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-						if (gun->subRot > 0)
+						if (gun->subPos > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 						}
-						else if (gun->subRot < 0)
+						else if (gun->subPos < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 						}
@@ -851,11 +868,11 @@ void SetGun(int no)
 					else
 					{
 						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 4.0f;
-						if (gun->subRot > 0)
+						if (gun->subPos > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
-						else if (gun->subRot < 0)
+						else if (gun->subPos < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
@@ -864,11 +881,11 @@ void SetGun(int no)
 				else
 				{
 					gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-					if (gun->subRot > 0)
+					if (gun->subPos > 0)
 					{
 						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
-					else if (gun->subRot < 0)
+					else if (gun->subPos < 0)
 					{
 						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
@@ -900,12 +917,12 @@ void SetGun(int no)
 					if (gun->type == GUN_SHOTGUN)
 					{
 						gun->subPos.x = TEXTURE_PLAYER_SIZE_X / 8.0f;
-						if (gun->subRot < 0)
+						if (gun->subPos < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
 						}
-						else if (gun->subRot > 0)
+						else if (gun->subPos > 0)
 						{
 							gun->subPos.y += TEXTURE_PLAYER_SIZE_Y / 8.0f;
 						}
@@ -913,11 +930,11 @@ void SetGun(int no)
 					else
 					{
 						gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f * 3;
-						if (gun->subRot < 0)
+						if (gun->subPos < 0)
 						{
 							gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 4.0f;
 						}
-						else if (gun->subRot > 0)
+						else if (gun->subPos > 0)
 						{
 							gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 4.0f;
 							gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 4.0f;
@@ -927,11 +944,11 @@ void SetGun(int no)
 				else
 				{
 					gun->subPos.x = -TEXTURE_PLAYER_SIZE_X / 8.0f;
-					if (gun->subRot < 0)
+					if (gun->subPos < 0)
 					{
 						gun->subPos.x -= TEXTURE_PLAYER_SIZE_X / 8.0f;
 					}
-					else if (gun->subRot > 0)
+					else if (gun->subPos > 0)
 					{
 						gun->subPos.x += TEXTURE_PLAYER_SIZE_X / 8.0f;
 						gun->subPos.y -= TEXTURE_PLAYER_SIZE_Y / 8.0f;
@@ -1031,8 +1048,8 @@ void SetShot()
 			{
 				for (int i = 0; i < SLUG_MAX; i++)
 				{
-					float subRot = D3DX_PI * 0.166 * (rand() % 360) / 360 - D3DX_PI * 0.083;
-					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+					float subPos = D3DX_PI * 0.166 * (rand() % 360) / 360 - D3DX_PI * 0.083;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subPos, PLAYER_BULLET_SHOTGUN);
 				}
 				gun->interval = gun->index = INT_SHOT_SHOTGUN / 1.5;
 			}
@@ -1040,8 +1057,8 @@ void SetShot()
 			{
 				for (int i = 0; i < SLUG_MAX; i++)
 				{
-					float subRot = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
-					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subRot, PLAYER_BULLET_SHOTGUN);
+					float subPos = D3DX_PI * 0.33 * (rand() % 360) / 360 - D3DX_PI * 0.166;
+					SetBullet(pos + GetGun()->pos, GetGun()->rot.z + subPos, PLAYER_BULLET_SHOTGUN);
 				}
 				gun->interval = gun->index = INT_SHOT_SHOTGUN;
 			}
@@ -1075,4 +1092,13 @@ void SetShot()
 			}
 		}
 	}
+}
+
+//=============================================================================
+// 弾拾得関数
+//=============================================================================
+void GetSlug(void)
+{
+	GUN *gun = &gunWk;
+	gun->numSlug += MAG_SHOTGUN;
 }

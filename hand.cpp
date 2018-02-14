@@ -194,7 +194,7 @@ void SetVertexHand(bool isLEFT)
 {
 	PLAYER *player = GetPlayer();
 	HAND *hand = &handWk;
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// í∏ì_ç¿ïWÇÃê›íË
 	if (isLEFT)

@@ -989,7 +989,7 @@ void CheckHit(void)
 
 				// Ž©•ª‚ÌHPŒ¸­ˆ—
 				player->hp--;
-				SetInvincible(player);
+				SetDamage(player);
 				float rotZ = atan2(player->pos.y - bullet->pos.y, player->pos.x - bullet->pos.x);
 				KnockBackPlayer(player, rotZ);
 				if (player->hp <= 0)

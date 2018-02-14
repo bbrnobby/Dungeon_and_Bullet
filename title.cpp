@@ -77,7 +77,7 @@ int				g_stageState;								// タイトルの状態
 int				g_interval;									// インターバル
 int				g_staLogo;									// ロゴ番号(開始)
 int				g_endLogo;									// ロゴ番号(終了)
-float			g_rot;										// 回転(揺らぎに使用)
+float			g_rotTitle;										// 回転(揺らぎに使用)
 
 LPDIRECTSOUNDBUFFER8	g_pTitleBGM;						// BGM用バッファ
 LPDIRECTSOUNDBUFFER8	g_pTitleSE_Shot;					// SE用バッファ
@@ -148,7 +148,7 @@ HRESULT InitTitle(int type)
 	g_stageState = TITLE_IN;
 	g_interval = 10;
 	g_staLogo = g_endLogo = 0;
-	g_rot = 0.0f;
+	g_rotTitle = 0.0f;
 
 	return S_OK;
 }
@@ -308,7 +308,7 @@ void UpdateTitle(void)
 		}
 		if (g_staLogo == LOGO_MAX)
 		{
-			if (g_rot == 0.0f)
+			if (g_rotTitle == 0.0f)
 			{
 				// サウンドの再生
 				PlaySound(g_pTitleSE_Shot, E_DS8_FLAG_NONE);
@@ -320,13 +320,13 @@ void UpdateTitle(void)
 				g_vertexWkTitleHole[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
 			}
 
-			g_rot += D3DX_PI * 0.75;
-			if (g_rot < D3DX_PI * 50)
+			g_rotTitle += D3DX_PI * 0.75;
+			if (g_rotTitle < D3DX_PI * 50)
 			{
 				for (int i = 0; i < LOGO_MAX; i++)
 				{
-					g_posTitleLogo[i].x = (D3DX_PI * 50 - g_rot) * cosf(g_rot) * 0.25;
-					g_posTitleLogo[i].y = (D3DX_PI * 50 - g_rot) * sinf(g_rot) * 0.5;
+					g_posTitleLogo[i].x = (D3DX_PI * 50 - g_rotTitle) * cosf(g_rotTitle) * 0.25;
+					g_posTitleLogo[i].y = (D3DX_PI * 50 - g_rotTitle) * sinf(g_rotTitle) * 0.5;
 
 					// 頂点座標の設定
 					g_vertexWkTitleLogo[0 + i * NUM_VERTEX].vtx = g_posTitleLogo[i] + D3DXVECTOR3(192 * (i / 7) + (128 - 32 * (i / 7)) * (i % 7), 32 + 96 * (i / 7), 0.0f);
@@ -379,26 +379,26 @@ void UpdateTitle(void)
 			g_vertexWkTitleHole[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 - g_interval);
 			g_vertexWkTitleHole[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 - g_interval);
 		}
-		g_rot += 0.02f;
-		if (g_rot > D3DX_PI * 2) g_rot -= D3DX_PI * 2;
+		g_rotTitle += 0.02f;
+		if (g_rotTitle > D3DX_PI * 2) g_rotTitle -= D3DX_PI * 2;
 
 		// 反射光の設定
-		g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rot * 2)));
-		g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rot * 2)));
-		g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rot * 2)));
-		g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rot * 2)));
+		g_vertexWkTitleText[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		g_vertexWkTitleText[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		g_vertexWkTitleText[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
+		g_vertexWkTitleText[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255 * (int)(1 + cosf(g_rotTitle * 2)));
 
 		// 反射光の設定
-		g_vertexWkTitleChroma[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleChroma[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleChroma[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleChroma[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rot)) / 2.0f));
+		g_vertexWkTitleChroma[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleChroma[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleChroma[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleChroma[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(255 * (1 - cosf(g_rotTitle)) / 2.0f));
 
 		// 反射光の設定
-		g_vertexWkTitleBGChroma[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleBGChroma[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleBGChroma[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rot)) / 2.0f));
-		g_vertexWkTitleBGChroma[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rot)) / 2.0f));
+		g_vertexWkTitleBGChroma[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleBGChroma[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleBGChroma[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rotTitle)) / 2.0f));
+		g_vertexWkTitleBGChroma[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, (int)(g_interval * (1 - cosf(g_rotTitle)) / 2.0f));
 		break;
 	case TITLE_OUT:
 		if (g_interval == 50)

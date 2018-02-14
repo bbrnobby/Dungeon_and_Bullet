@@ -249,7 +249,7 @@ void SetTextureTreasure(int no)
 void SetVertexTreasure(int no)
 {
 	TREASURE *treasure = &treasureWk[no];
-	D3DXVECTOR3 *posCamera = GetCameraPos();
+	D3DXVECTOR3 *posCamera = GetPosCamera();
 
 	// ’¸“_À•W‚Ìİ’è
 	treasure->vertexWk[0].vtx.x = treasure->pos.x + posCamera->x - cosf(treasure->BaseAngle + treasure->rot.z) * treasure->Radius;;

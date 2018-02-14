@@ -7,7 +7,7 @@
 #include "main.h"
 #include "heart.h"
 #include "player.h"
-#include <stdio.h>
+#include "camera.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -168,21 +168,30 @@ void SetTextureHeart(void)
 
 void SetVertexHeart(void)
 {
+	D3DXVECTOR3 *subPosCamera = GetSubPosCamera();
+
 	for (int i = 0; i < MAX_HP; i++)
 	{
 		// 頂点座標の設定
 		g_vertexWkHeart[i][0].vtx.x = g_sizeHeart.x * i + g_posHeart.x;
 		g_vertexWkHeart[i][0].vtx.y = g_posHeart.y;
 		g_vertexWkHeart[i][0].vtx.z = 0.0f;
+		g_vertexWkHeart[i][0].vtx += *subPosCamera;
+
 		g_vertexWkHeart[i][1].vtx.x = g_sizeHeart.x * i + g_posHeart.x + g_sizeHeart.x;
 		g_vertexWkHeart[i][1].vtx.y = g_posHeart.y;
 		g_vertexWkHeart[i][1].vtx.z = 0.0f;
+		g_vertexWkHeart[i][1].vtx += *subPosCamera;
+
 		g_vertexWkHeart[i][2].vtx.x = g_sizeHeart.x * i + g_posHeart.x;
 		g_vertexWkHeart[i][2].vtx.y = g_posHeart.y + g_sizeHeart.y;
 		g_vertexWkHeart[i][2].vtx.z = 0.0f;
+		g_vertexWkHeart[i][2].vtx += *subPosCamera;
+
 		g_vertexWkHeart[i][3].vtx.x = g_sizeHeart.x * i + g_posHeart.x + g_sizeHeart.x;
 		g_vertexWkHeart[i][3].vtx.y = g_posHeart.y + g_sizeHeart.y;
 		g_vertexWkHeart[i][3].vtx.z = 0.0f;
+		g_vertexWkHeart[i][3].vtx += *subPosCamera;
 	}
 }
 

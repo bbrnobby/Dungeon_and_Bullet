@@ -26,7 +26,7 @@ typedef struct	// プレイヤー構造体
 	bool			isMove;						// 動いているか
 	int				state;						// 状態
 	D3DXVECTOR3		pos;						// 移動量
-	float			subRot;					// 縦移動
+	float			subRot;						// 縦移動
 	D3DXVECTOR3		vec;						// 移動ベクトル
 	D3DXVECTOR3		subVec;						// 反動ベクトル
 	bool			invincible;					// 無敵
@@ -76,6 +76,6 @@ void DrawPlayer(void);
 PLAYER *GetPlayer(void);
 void SetPlayer(float x, float y);
 void KnockBackPlayer(PLAYER *player, float rotZ);
-void SetInvincible(PLAYER *player);
+void SetDamage(PLAYER *player);
 
 #endif

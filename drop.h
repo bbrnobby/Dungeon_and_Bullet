@@ -12,8 +12,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_GAME_DROP				_T("data/TEXTURE/drop001.png")	// サンプル用画像
-#define TEXTURE_DROP_SIZE				(48)	// テクスチャサイズ
+#define TEXTURE_DROP_SIZE				(48)		// テクスチャサイズ
 
 #define MAX_DROP						(30)
 #define DROP_MES_SIZE					(36)
@@ -34,6 +33,7 @@ enum DROP_TYPE
 	DROP_JEWEL003,
 	DROP_JEWEL004,
 	DROP_JEWEL005,
+	DROP_SLUG,
 	DROP_MAX
 };
 
@@ -45,14 +45,15 @@ typedef struct	// フォント構造体
 {
 	bool			use;						// true:使用  false:未使用
 	D3DXVECTOR3		pos;						// 位置
-	D3DXVECTOR3		vec;
-	D3DXVECTOR3		rot;
-	float			subVec;
-	float			height;
-	int				type;
-	int				size;
+	D3DXVECTOR3		vec;						// 速度
+	D3DXVECTOR3		rot;						// 回転
+	float			vecRot;						// 回転速度
+	float			subVec;						// 縦移動
+	float			height;						// 高さ
+	int				type;						// 種類
+	int				size;						// 大きさ
 
-	int				interval;
+	int				interval;					// インターバル
 
 	LPDIRECT3DTEXTURE9	Texture;				// テクスチャ情報
 	VERTEX_2D		vertexWk[NUM_VERTEX];		// 頂点情報格納ワーク

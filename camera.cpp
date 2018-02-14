@@ -26,8 +26,10 @@
 // グローバル変数
 //*****************************************************************************
 D3DXVECTOR3		g_posCamera;				// カメラの視点
+D3DXVECTOR3		g_subPosCamera;				// カメラの揺れ
 D3DXVECTOR3		g_posCameraRounded;			// カメラの視点(整数)
 D3DXVECTOR3		g_vecCamera;				// カメラの方向
+float			g_rotCamera;				// 揺れの値
 
 //=============================================================================
 // 初期化処理
@@ -35,7 +37,9 @@ D3DXVECTOR3		g_vecCamera;				// カメラの方向
 HRESULT InitCamera(void)
 {
 	g_posCamera = SCREEN_CENTER;					// 座標データを初期化
+	g_subPosCamera = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 揺れデータを初期化
 	g_vecCamera = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 方向データを初期化
+	g_rotCamera = 0.0f;								// 揺れの値を初期化
 
 	return S_OK;
 }
@@ -103,24 +107,38 @@ void UpdateCamera(void)
 		// カメラをプレイヤーの中心に向ける
 		//g_vecCamera = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	}
+
+	if (g_rotCamera != 0.0f)
+	{
+		g_rotCamera += D3DX_PI * 0.75;
+		if (g_rotCamera < D3DX_PI * 20)
+		{
+			g_subPosCamera.x = (D3DX_PI * 20 - g_rotCamera) * cosf(g_rotCamera) * 0.25;
+			g_subPosCamera.y = (D3DX_PI * 20 - g_rotCamera) * sinf(g_rotCamera) * 0.5;
+		}
+		else
+		{
+			g_subPosCamera = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			g_rotCamera = 0.0f;
+		}
+	}
 }
 
 //=============================================================================
 // カメラ座標取得関数
 //=============================================================================
-D3DXVECTOR3 *GetCameraPos(void)
+D3DXVECTOR3 *GetPosCamera(void)
 {
 	return(&g_posCameraRounded);
 }
 
 //=============================================================================
-// カメラ方向取得関数
+// 揺れ取得関数
 //=============================================================================
-D3DXVECTOR3 *GetCameraVec(void)
+D3DXVECTOR3 *GetSubPosCamera(void)
 {
-	return(&g_vecCamera);
+	return(&g_subPosCamera);
 }
-
 
 //=============================================================================
 // カメラ座標設定関数
@@ -129,4 +147,14 @@ void SetCamera(float x, float y)
 {
 	g_posCamera = D3DXVECTOR3(x, y, 0.0f);			// 座標データを初期化
 	g_vecCamera = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 方向データを初期化
+}
+
+//=============================================================================
+// カメラ揺れ設定関数
+//=============================================================================
+void SetShakeCamera(void)
+{
+	g_rotCamera += D3DX_PI * 0.75;
+	g_subPosCamera.x = (D3DX_PI * 50 - g_rotCamera) * cosf(g_rotCamera) * 0.25;
+	g_subPosCamera.y = (D3DX_PI * 50 - g_rotCamera) * sinf(g_rotCamera) * 0.5;
 }
